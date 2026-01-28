@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { Modal, Button, Form, Row, Col, InputGroup, Alert } from 'react-bootstrap';
 import { FaRupeeSign, FaLock, FaCheckCircle } from 'react-icons/fa';
 import axios from 'axios';
+import { useRazorpay } from 'react-razorpay';
+import { donationService } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
@@ -10,7 +12,7 @@ const DonationModal = ({ show, onHide, campaignTitle, campaignId }) => {
     const navigate = useNavigate();
     const [amount, setAmount] = useState(500);
     const [customAmount, setCustomAmount] = useState('');
-    const [paymentMethod, setPaymentMethod] = useState('upi');
+    const [paymentMethod, setPaymentMethod] = useState('razorpay');
     const [step, setStep] = useState(1); // 1: Amount, 2: Payment, 3: Success
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
@@ -103,6 +105,62 @@ const DonationModal = ({ show, onHide, campaignTitle, campaignId }) => {
         </>
     );
 
+    const { Razorpay } = useRazorpay();
+
+    const handlePayment = async () => {
+        setLoading(true);
+        setError('');
+        try {
+            // 1. Create Order
+            const order = await donationService.createOrder(amount);
+
+            const options = {
+                key: "rzp_test_YourKeyHere", // Replace with env var in real app
+                amount: order.amount,
+                currency: "INR",
+                name: "MicroLift",
+                description: `Donation for ${campaignTitle}`,
+                order_id: order.id,
+                handler: async (response) => {
+                    try {
+                        // 2. Verify Payment
+                        const verifyData = {
+                            razorpay_payment_id: response.razorpay_payment_id,
+                            razorpay_order_id: response.razorpay_order_id,
+                            razorpay_signature: response.razorpay_signature,
+                            amount: amount,
+                            campaignId: campaignId,
+                            donorId: user ? user.id : 1, // Fallback if no user context yet
+                            isAnonymous: isAnonymous
+                        };
+                        await donationService.verifyDonation(verifyData);
+                        setStep(3);
+                    } catch (verifyErr) {
+                        console.error(verifyErr);
+                        setError('Payment verification failed.');
+                    }
+                },
+                prefill: {
+                    name: user ? user.fullName : "Donor",
+                    email: user ? user.email : "donor@example.com",
+                    contact: user ? user.phoneNumber : "9999999999"
+                },
+                theme: {
+                    color: "#3399cc"
+                }
+            };
+
+            const rzp1 = new Razorpay(options);
+            rzp1.open();
+
+        } catch (err) {
+            console.error(err);
+            setError('Failed to initiate payment. Please try again.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const renderStep2 = () => (
         <>
             <Modal.Header closeButton onHide={() => setStep(1)}>
@@ -113,24 +171,14 @@ const DonationModal = ({ show, onHide, campaignTitle, campaignId }) => {
                 {error && <Alert variant="danger">{error}</Alert>}
 
                 <Form className="d-grid gap-3">
-                    <div className={`p-3 border rounded cursor-pointer ${paymentMethod === 'upi' ? 'border-primary bg-light' : ''}`} onClick={() => setPaymentMethod('upi')}>
+                    <div className={`p-3 border rounded cursor-pointer ${paymentMethod === 'razorpay' ? 'border-primary bg-light' : ''}`} onClick={() => setPaymentMethod('razorpay')}>
                         <Form.Check
                             type="radio"
-                            label="UPI (GPay, PhonePe, Paytm)"
+                            label="Pay via Razorpay (UPI, Card, NetBanking)"
                             name="payment"
-                            id="upi"
-                            checked={paymentMethod === 'upi'}
-                            onChange={() => setPaymentMethod('upi')}
-                        />
-                    </div>
-                    <div className={`p-3 border rounded cursor-pointer ${paymentMethod === 'card' ? 'border-primary bg-light' : ''}`} onClick={() => setPaymentMethod('card')}>
-                        <Form.Check
-                            type="radio"
-                            label="Credit / Debit Card"
-                            name="payment"
-                            id="card"
-                            checked={paymentMethod === 'card'}
-                            onChange={() => setPaymentMethod('card')}
+                            id="razorpay"
+                            checked={paymentMethod === 'razorpay'}
+                            onChange={() => setPaymentMethod('razorpay')}
                         />
                     </div>
                 </Form>
@@ -139,7 +187,7 @@ const DonationModal = ({ show, onHide, campaignTitle, campaignId }) => {
                     variant="success"
                     size="lg"
                     className="w-100 mt-4"
-                    onClick={handleDonate}
+                    onClick={handlePayment}
                     disabled={loading}
                 >
                     {loading ? 'Processing...' : `Pay ₹${amount}`}

@@ -1,15 +1,15 @@
 import axios from 'axios';
 
-const API_BASE = 'http://localhost:8081/api';
+const API_BASE = 'http://localhost:8080/api';
 
 export const campaignService = {
     getPublicCampaigns: async () => {
-        const response = await axios.get(`${API_BASE}/campaigns/public`);
+        const response = await axios.get(`${API_BASE}/campaigns`);
         return response.data.map(campaign => ({
             ...campaign,
-            image: campaign.imageUrl || campaign.image,
-            goal: campaign.goalAmount || campaign.goal,
-            raised: campaign.raisedAmount || campaign.raised || 0
+            image: campaign.imageUrl, // Map backend field to frontend expectation
+            goal: campaign.goalAmount,
+            raised: campaign.raisedAmount || 0
         }));
     },
     getCampaignById: async (id) => {
@@ -29,6 +29,10 @@ export const donationService = {
     },
     getDonorDonations: async (donorId) => {
         const response = await axios.get(`${API_BASE}/donations/donor/${donorId}`);
+        return response.data;
+    },
+    getCampaignDonations: async (campaignId) => {
+        const response = await axios.get(`${API_BASE}/donations/campaign/${campaignId}`);
         return response.data;
     }
 };

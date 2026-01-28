@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Card, ProgressBar, Button, Tabs, Tab, Breadcrumb, Badge, Image } from 'react-bootstrap';
 import { useParams, Link } from 'react-router-dom';
-import axios from 'axios';
+import { campaignService } from '../services/api';
 import { FaMapMarkerAlt, FaCheckCircle, FaUserGraduate, FaShareAlt, FaHeart, FaHeartbeat, FaFileInvoiceDollar } from 'react-icons/fa';
 import DonationModal from '../components/DonationModal';
 
@@ -14,8 +14,8 @@ const CampaignDetail = () => {
     useEffect(() => {
         const fetchCampaign = async () => {
             try {
-                const res = await axios.get(`http://localhost:8081/api/campaigns/public/${id}`);
-                setCampaign(res.data);
+                const data = await campaignService.getCampaignById(id);
+                setCampaign(data);
             } catch (err) {
                 console.error(err);
             } finally {

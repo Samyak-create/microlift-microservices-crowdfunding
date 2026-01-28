@@ -1,0 +1,29 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: true
+      routes:
+        - id: auth-service
+          uri: lb://auth-service
+          predicates:
+            - Path=/api/auth/**, /api/users/**
+        - id: campaign-service
+          uri: lb://campaign-service
+          predicates:
+            - Path=/api/campaigns/**
+        - id: donation-service
+          uri: lb://donation-service
+          predicates:
+            - Path=/api/donations/**
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:8761/eureka/
