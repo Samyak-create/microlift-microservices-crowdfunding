@@ -18,7 +18,7 @@ export const AuthProvider = ({ children }) => {
     }, []);
 
     const login = async (email, password) => {
-        const response = await axios.post('http://localhost:8081/api/auth/login', { email, password });
+        const response = await axios.post('http://localhost:8080/api/auth/login', { email, password });
         const { token, ...userData } = response.data;
         localStorage.setItem('token', token);
         localStorage.setItem('user', JSON.stringify(userData));
@@ -28,7 +28,7 @@ export const AuthProvider = ({ children }) => {
     };
 
     const register = async (userData) => {
-        const response = await axios.post('http://localhost:8081/api/auth/register', userData);
+        const response = await axios.post('http://localhost:8080/api/auth/register', userData);
         const { token, ...data } = response.data;
         localStorage.setItem('token', token);
         localStorage.setItem('user', JSON.stringify(data));

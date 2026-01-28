@@ -17,13 +17,27 @@ export const campaignService = {
         return response.data;
     },
     createCampaign: async (campaignData) => {
-        const response = await axios.post(`${API_BASE}/campaigns`, campaignData);
+        // Check if data is FormData (has files) or regular JSON
+        const headers = campaignData instanceof FormData ? { 'Content-Type': 'multipart/form-data' } : {};
+        const response = await axios.post(`${API_BASE}/campaigns`, campaignData, { headers });
+        return response.data;
+    },
+    getPendingCampaigns: async () => {
+        const response = await axios.get(`${API_BASE}/campaigns/pending`);
+        return response.data;
+    },
+    verifyCampaign: async (id, status) => {
+        const response = await axios.put(`${API_BASE}/campaigns/${id}/status?status=${status}`);
         return response.data;
     }
 };
 
 export const donationService = {
-    processDonation: async (donationData) => {
+    verifyDonation: async (paymentData) => {
+        const response = await axios.post(`${API_BASE}/donations/verify`, paymentData);
+        return response.data;
+    },
+    createDonation: async (donationData) => {
         const response = await axios.post(`${API_BASE}/donations`, donationData);
         return response.data;
     },

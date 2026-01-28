@@ -90,6 +90,11 @@ h1, h2, h3, h4, h5, h6 {
     color: var(--primary-color) !important;
 }
 
+.nav-link.active {
+    color: var(--primary-color) !important;
+    font-weight: 700;
+}
+
 .progress {
   height: 8px;
   border-radius: 4px;

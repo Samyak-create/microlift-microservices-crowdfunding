@@ -4,9 +4,11 @@ import { useParams, Link } from 'react-router-dom';
 import { campaignService } from '../services/api';
 import { FaMapMarkerAlt, FaCheckCircle, FaUserGraduate, FaShareAlt, FaHeart, FaHeartbeat, FaFileInvoiceDollar } from 'react-icons/fa';
 import DonationModal from '../components/DonationModal';
+import { useAuth } from '../context/AuthContext';
 
 const CampaignDetail = () => {
     const { id } = useParams();
+    const { user } = useAuth();
     const [campaign, setCampaign] = useState(null);
     const [loading, setLoading] = useState(true);
     const [showDonate, setShowDonate] = useState(false);
@@ -126,9 +128,15 @@ const CampaignDetail = () => {
                                         <span>{campaign.endDate} ends</span>
                                     </div>
 
-                                    <Button variant="primary" size="lg" className="w-100 mb-3 fw-bold" onClick={() => setShowDonate(true)}>
-                                        Donate Now
-                                    </Button>
+                                    {user && user.role === 'ADMIN' ? (
+                                        <div className="alert alert-warning text-center">
+                                            Admins cannot donate.
+                                        </div>
+                                    ) : (
+                                        <Button variant="primary" size="lg" className="w-100 mb-3 fw-bold" onClick={() => setShowDonate(true)}>
+                                            Donate Now
+                                        </Button>
+                                    )}
                                     <Button variant="outline-secondary" className="w-100 mb-4">
                                         <FaShareAlt className="me-2" /> Share Campaign
                                     </Button>

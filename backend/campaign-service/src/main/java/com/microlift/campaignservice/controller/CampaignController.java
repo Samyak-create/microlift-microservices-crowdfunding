@@ -16,9 +16,20 @@ public class CampaignController {
 
     private final CampaignService campaignService;
 
-    @PostMapping
-    public ResponseEntity<Campaign> createCampaign(@RequestBody CampaignRequest request) {
-        return ResponseEntity.ok(campaignService.createCampaign(request));
+    @PostMapping(consumes = org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Campaign> createCampaign(
+            @RequestPart(value = "campaign") CampaignRequest request,
+            @RequestPart(value = "thumbnail", required = false) org.springframework.web.multipart.MultipartFile thumbnail,
+            @RequestPart(value = "files", required = false) List<org.springframework.web.multipart.MultipartFile> files) {
+        return ResponseEntity.ok(campaignService.createCampaign(request, thumbnail, files));
+    }
+
+    @GetMapping("/files/{fileName:.+}")
+    public ResponseEntity<org.springframework.core.io.Resource> getFile(@PathVariable String fileName) {
+        org.springframework.core.io.Resource file = campaignService.loadFileAsResource(fileName);
+        return ResponseEntity.ok()
+                .header(org.springframework.http.HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + file.getFilename() + "\"")
+                .body(file);
     }
 
     @GetMapping

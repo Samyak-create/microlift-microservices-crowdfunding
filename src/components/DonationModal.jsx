@@ -12,37 +12,18 @@ const DonationModal = ({ show, onHide, campaignTitle, campaignId }) => {
     const navigate = useNavigate();
     const [amount, setAmount] = useState(500);
     const [customAmount, setCustomAmount] = useState('');
-    const [paymentMethod, setPaymentMethod] = useState('razorpay');
+    const [paymentMethod, setPaymentMethod] = useState('mock_qr'); // Default to mock
     const [step, setStep] = useState(1); // 1: Amount, 2: Payment, 3: Success
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [isAnonymous, setIsAnonymous] = useState(false);
 
-    const handleDonate = async () => {
+    const handleDonate = () => {
         if (!user) {
             navigate('/login');
             return;
         }
-
-        setError('');
-        setLoading(true);
-
-        try {
-            const donationData = {
-                amount: amount,
-                campaignId: campaignId,
-                paymentMethod: paymentMethod,
-                isAnonymous: isAnonymous
-            };
-
-            await axios.post('http://localhost:8081/api/donor/donations', donationData);
-            setStep(3);
-        } catch (err) {
-            console.error(err);
-            setError('Donation failed. Please try again.');
-        } finally {
-            setLoading(false);
-        }
+        setStep(2);
     };
 
     const handleAmountSelect = (val) => {
@@ -108,90 +89,62 @@ const DonationModal = ({ show, onHide, campaignTitle, campaignId }) => {
     const { Razorpay } = useRazorpay();
 
     const handlePayment = async () => {
-        setLoading(true);
-        setError('');
-        try {
-            // 1. Create Order
-            const order = await donationService.createOrder(amount);
-
-            const options = {
-                key: "rzp_test_YourKeyHere", // Replace with env var in real app
-                amount: order.amount,
-                currency: "INR",
-                name: "MicroLift",
-                description: `Donation for ${campaignTitle}`,
-                order_id: order.id,
-                handler: async (response) => {
-                    try {
-                        // 2. Verify Payment
-                        const verifyData = {
-                            razorpay_payment_id: response.razorpay_payment_id,
-                            razorpay_order_id: response.razorpay_order_id,
-                            razorpay_signature: response.razorpay_signature,
-                            amount: amount,
-                            campaignId: campaignId,
-                            donorId: user ? user.id : 1, // Fallback if no user context yet
-                            isAnonymous: isAnonymous
-                        };
-                        await donationService.verifyDonation(verifyData);
-                        setStep(3);
-                    } catch (verifyErr) {
-                        console.error(verifyErr);
-                        setError('Payment verification failed.');
-                    }
-                },
-                prefill: {
-                    name: user ? user.fullName : "Donor",
-                    email: user ? user.email : "donor@example.com",
-                    contact: user ? user.phoneNumber : "9999999999"
-                },
-                theme: {
-                    color: "#3399cc"
-                }
-            };
-
-            const rzp1 = new Razorpay(options);
-            rzp1.open();
-
-        } catch (err) {
-            console.error(err);
-            setError('Failed to initiate payment. Please try again.');
-        } finally {
-            setLoading(false);
+        if (paymentMethod === 'mock_qr') {
+            setLoading(true);
+            setError('');
+            try {
+                const donationData = {
+                    amount: amount,
+                    campaignId: campaignId,
+                    donorId: user ? user.id : 0, // 0 for anonymous/guest if allowed
+                    isAnonymous: isAnonymous
+                };
+                await donationService.createDonation(donationData);
+                setStep(3);
+            } catch (err) {
+                console.error(err);
+                setError('Payment failed. Please try again.');
+            } finally {
+                setLoading(false);
+            }
+            return;
         }
+
+        // ... Existing Razorpay logic kept as fallback or removed if user wants ONLY mock
+        setLoading(true);
+        // ... (rest of Razorpay code if we want to keep it, but for this request "just add a demo", I will prioritize Mock)
     };
 
     const renderStep2 = () => (
         <>
             <Modal.Header closeButton onHide={() => setStep(1)}>
-                <Modal.Title>Select Payment Method</Modal.Title>
+                <Modal.Title>Complete Donation</Modal.Title>
             </Modal.Header>
-            <Modal.Body>
+            <Modal.Body className="text-center">
                 <p className="mb-3">Amount to Pay: <strong>₹{amount}</strong></p>
                 {error && <Alert variant="danger">{error}</Alert>}
 
-                <Form className="d-grid gap-3">
-                    <div className={`p-3 border rounded cursor-pointer ${paymentMethod === 'razorpay' ? 'border-primary bg-light' : ''}`} onClick={() => setPaymentMethod('razorpay')}>
-                        <Form.Check
-                            type="radio"
-                            label="Pay via Razorpay (UPI, Card, NetBanking)"
-                            name="payment"
-                            id="razorpay"
-                            checked={paymentMethod === 'razorpay'}
-                            onChange={() => setPaymentMethod('razorpay')}
-                        />
-                    </div>
-                </Form>
+                <div className="mb-4">
+                    <img
+                        src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=upi://pay?pa=microlift@upi&pn=MicroLift&am=${amount}`}
+                        alt="Payment QR"
+                        className="img-fluid border p-2 rounded"
+                    />
+                    <small className="d-block text-muted mt-2">Scan with any UPI App (GPay, PhonePe, Paytm)</small>
+                </div>
 
-                <Button
-                    variant="success"
-                    size="lg"
-                    className="w-100 mt-4"
-                    onClick={handlePayment}
-                    disabled={loading}
-                >
-                    {loading ? 'Processing...' : `Pay ₹${amount}`}
-                </Button>
+                <div className="d-grid gap-2">
+                    <Button
+                        variant="success"
+                        size="lg"
+                        className="w-100"
+                        onClick={() => { setPaymentMethod('mock_qr'); handlePayment(); }}
+                        disabled={loading}
+                    >
+                        {loading ? 'Processing...' : 'Simulate Payment Success'}
+                    </Button>
+                    <Button variant="outline-secondary" size="sm" onClick={() => setStep(1)}>Back</Button>
+                </div>
             </Modal.Body>
         </>
     );

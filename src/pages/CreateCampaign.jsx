@@ -3,12 +3,15 @@ import { Container, Row, Col, Card, Form, Button, InputGroup, Alert } from 'reac
 import { FaUpload, FaCheck } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import { campaignService } from '../services/api';
+import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../context/AuthContext'; // Import useAuth
 
 const CreateCampaign = () => {
     const navigate = useNavigate();
     const [submitted, setSubmitted] = useState(false);
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(false);
+    const { user } = useAuth(); // Use useAuth hook
     const [formData, setFormData] = useState({
         title: '',
         category: '',
@@ -16,9 +19,12 @@ const CreateCampaign = () => {
         description: '',
         endDate: '',
         location: '',
-        imageUrl: 'https://via.placeholder.com/800x400',
-        beneficiaryId: 1 // Default/Mock ID until auth context is fully integrated
+        // imageUrl removed, handled via file upload
+        beneficiaryId: user?.id || 1 // Use logged-in User ID
     });
+
+    const [selectedFiles, setSelectedFiles] = useState(null);
+    const [thumbnailFile, setThumbnailFile] = useState(null); // [NEW] Thumbnail State
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -28,12 +34,38 @@ const CreateCampaign = () => {
         }));
     };
 
+    const handleFileChange = (e) => {
+        setSelectedFiles(e.target.files);
+    };
+
+    const handleThumbnailChange = (e) => {
+        setThumbnailFile(e.target.files[0]);
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
         setError(null);
         try {
-            await campaignService.createCampaign(formData);
+            const formDataToSend = new FormData();
+
+            // Append campaign JSON data as a Blob
+            const campaignBlob = new Blob([JSON.stringify(formData)], { type: "application/json" });
+            formDataToSend.append('campaign', campaignBlob);
+
+            // Append Campaign Thumbnail
+            if (thumbnailFile) {
+                formDataToSend.append('thumbnail', thumbnailFile);
+            }
+
+            // Append each file
+            if (selectedFiles) {
+                for (let i = 0; i < selectedFiles.length; i++) {
+                    formDataToSend.append('files', selectedFiles[i]);
+                }
+            }
+
+            await campaignService.createCampaign(formDataToSend);
             setSubmitted(true);
             setTimeout(() => {
                 navigate('/dashboard');
@@ -99,13 +131,19 @@ const CreateCampaign = () => {
                                             <Form.Control type="text" name="location" value={formData.location} onChange={handleChange} placeholder="City, State" required />
                                         </Col>
 
+                                        <Col md={12} className="mb-3">
+                                            <Form.Label>Campaign Thumbnail Image</Form.Label>
+                                            <Form.Control type="file" accept="image/*" onChange={handleThumbnailChange} required />
+                                            <Form.Text className="text-muted">This image will be shown on the campaign card.</Form.Text>
+                                        </Col>
+
                                         <Col md={12} className="mb-4">
                                             <Form.Label>Upload Verification Documents</Form.Label>
                                             <div className="border border-2 border-dashed rounded p-4 text-center bg-light">
                                                 <FaUpload className="text-muted mb-2" size={24} />
                                                 <p className="mb-2 text-muted">Drag & drop files here or click to upload</p>
                                                 <small className="text-muted d-block mb-3">(Medical Reports, Fee Structure, ID Proof)</small>
-                                                <Form.Control type="file" multiple />
+                                                <Form.Control type="file" multiple onChange={handleFileChange} />
                                             </div>
                                         </Col>
                                     </Row>

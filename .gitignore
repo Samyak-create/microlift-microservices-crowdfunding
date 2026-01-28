@@ -27,3 +27,11 @@ target/
 **/target/
 *.log
 
+# Runtime uploads
+microlift-uploads/
+**/microlift-uploads/
+
+# Build
+target/
+**/target/
+

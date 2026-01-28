@@ -26,8 +26,10 @@ const Register = () => {
             await register({ ...formData, role: key.toUpperCase() });
             // User requested explicit login flow
             navigate('/login', { state: { message: 'Registration successful! Please login to continue.' } });
-        } catch (_err) {
-            setError('Registration failed. Email might already exist.');
+        } catch (err) {
+            console.error("Registration Error:", err);
+            const errorMessage = err.response?.data?.message || err.response?.data || err.message || 'Registration failed. Please try again.';
+            setError(errorMessage);
         }
     };
 

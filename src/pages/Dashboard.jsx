@@ -3,7 +3,7 @@ import { Container } from 'react-bootstrap';
 import { useAuth } from '../context/AuthContext';
 import DonorDashboard from '../components/dashboards/DonorDashboard';
 import BeneficiaryDashboard from '../components/dashboards/BeneficiaryDashboard';
-import AdminDashboard from '../components/dashboards/AdminDashboard';
+import AdminDashboard from './AdminDashboard'; // Import from local pages folder
 
 const Dashboard = () => {
     const { user, loading } = useAuth();

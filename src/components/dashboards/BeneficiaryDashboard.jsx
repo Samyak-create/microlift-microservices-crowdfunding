@@ -1,100 +1,115 @@
-import React from 'react';
-import { Row, Col, Card, Table, Badge, Button } from 'react-bootstrap';
-import axios from 'axios';
-import { FaPlus, FaTimesCircle, FaFileUpload } from 'react-icons/fa';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Card, Row, Col, Table, Badge, Button } from 'react-bootstrap';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import { campaignService } from '../services/api';
 
 const BeneficiaryDashboard = () => {
-    const [campaigns, setCampaigns] = React.useState([]);
-    const [loading, setLoading] = React.useState(true);
+    const { user } = useAuth();
+    const navigate = useNavigate();
+    const [campaigns, setCampaigns] = useState([]);
+    const [loading, setLoading] = useState(true);
 
-    React.useEffect(() => {
+    useEffect(() => {
         const fetchCampaigns = async () => {
-            try {
-                const response = await axios.get('http://localhost:8081/api/beneficiary/campaigns');
-                setCampaigns(response.data);
-            } catch (error) {
-                console.error("Error fetching campaigns", error);
-            } finally {
-                setLoading(false);
+            if (user?.id) {
+                try {
+                    const data = await campaignService.getCampaignsByBeneficiary(user.id);
+                    setCampaigns(data);
+                } catch (err) {
+                    console.error("Failed to fetch campaigns", err);
+                } finally {
+                    setLoading(false);
+                }
             }
         };
         fetchCampaigns();
-    }, []);
+    }, [user]);
+
+    const totalRaised = campaigns.reduce((sum, c) => sum + (c.raisedAmount || 0), 0);
 
     return (
         <div>
-            <div className="d-flex justify-content-between align-items-center mb-4">
-                <h3>Beneficiary Dashboard</h3>
-                <Link to="/create-campaign" className="btn btn-primary"><FaPlus className="me-2" /> Create Campaign</Link>
-            </div>
+            <h2 className="mb-4 fw-bold">My Beneficiary Dashboard</h2>
 
             <Row className="mb-4">
-                <Col md={12}>
-                    <Card className="border-warning border-2 shadow-sm mb-3">
-                        <Card.Body className="d-flex align-items-center justify-content-between">
-                            <div className="d-flex align-items-center">
-                                <FaTimesCircle className="text-warning fs-3 me-3" />
-                                <div>
-                                    <h5 className="mb-1">Verification Status: Pending</h5>
-                                    <p className="mb-0 small text-muted">Please upload your Aadhar Card and Income Certificate for approval.</p>
-                                </div>
-                            </div>
-                            <Button variant="outline-dark" size="sm"><FaFileUpload className="me-2" /> Upload Docs</Button>
+                <Col md={4}>
+                    <Card className="text-center shadow-sm border-0 bg-primary text-white">
+                        <Card.Body className="py-4">
+                            <h3>₹{totalRaised.toLocaleString()}</h3>
+                            <p className="mb-0">Total Funds Received</p>
                         </Card.Body>
+                    </Card>
+                </Col>
+                <Col md={4}>
+                    <Card className="text-center shadow-sm border-0">
+                        <Card.Body className="py-4">
+                            <h3>{campaigns.length}</h3>
+                            <p className="text-muted mb-0">Total Campaigns</p>
+                        </Card.Body>
+                    </Card>
+                </Col>
+                <Col md={4}>
+                    <Card className="text-center shadow-sm border-0 d-flex align-items-center justify-content-center" style={{ minHeight: '120px' }}>
+                        <Button variant="outline-primary" onClick={() => navigate('/create-campaign')}>
+                            + Start New Campaign
+                        </Button>
                     </Card>
                 </Col>
             </Row>
 
-            <Card className="shadow-sm border-0 mb-4">
-                <Card.Header className="bg-white fw-bold">My Campaigns & Document Status</Card.Header>
-                <Card.Body>
-                    {loading ? <p>Loading...</p> : (
-                        <Table responsive>
-                            <thead>
-                                <tr>
-                                    <th>Title</th>
-                                    <th>Goal</th>
-                                    <th>Raised</th>
-                                    <th>Status</th>
-                                    <th>Documents</th>
-                                    <th>Progress</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {campaigns.length > 0 ? campaigns.map(campaign => (
-                                    <tr key={campaign.id}>
-                                        <td>{campaign.title}</td>
-                                        <td>₹{campaign.goalAmount}</td>
-                                        <td>₹{campaign.raisedAmount}</td>
-                                        <td><Badge bg={campaign.status === 'ACTIVE' ? 'success' : (campaign.status === 'PENDING' ? 'warning' : 'secondary')}>{campaign.status}</Badge></td>
+            <Card className="shadow-sm border-0">
+                <Card.Header className="bg-white fw-bold">My Campaigns</Card.Header>
+                <Card.Body className="p-0">
+                    <Table responsive hover className="mb-0">
+                        <thead className="bg-light">
+                            <tr>
+                                <th>Campaign</th>
+                                <th>Status</th>
+                                <th>Goal</th>
+                                <th>Raised</th>
+                                <th>Progress</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {loading ? (
+                                <tr><td colSpan="5" className="text-center py-4">Loading...</td></tr>
+                            ) : campaigns.length === 0 ? (
+                                <tr><td colSpan="5" className="text-center py-4 text-muted">No campaigns found. Start one today!</td></tr>
+                            ) : (
+                                campaigns.map(c => (
+                                    <tr key={c.id}>
                                         <td>
-                                            {campaign.documents && campaign.documents.length > 0 ? (
-                                                <ul className="list-unstyled mb-0 small">
-                                                    {campaign.documents.map(doc => (
-                                                        <li key={doc.id} className="d-flex align-items-center mb-1">
-                                                            <span className="me-2">{doc.name}:</span>
-                                                            <Badge bg={doc.status === 'VERIFIED' ? 'success' : (doc.status === 'PENDING' ? 'warning' : 'danger')}>
-                                                                {doc.status}
-                                                            </Badge>
-                                                        </li>
-                                                    ))}
-                                                </ul>
-                                            ) : <span className="text-muted small">No documents uploaded</span>}
+                                            <div className="fw-bold">{c.title}</div>
+                                            <small className="text-muted">{new Date(c.createdAt).toLocaleDateString()}</small>
                                         </td>
-                                        <td style={{ width: '25%' }}>
+                                        <td>
+                                            <Badge bg={
+                                                c.status === 'ACTIVE' ? 'success' :
+                                                    c.status === 'REJECTED' ? 'danger' :
+                                                        c.status === 'COMPLETED' ? 'info' : 'warning'
+                                            }>
+                                                {c.status}
+                                            </Badge>
+                                        </td>
+                                        <td>₹{c.goalAmount.toLocaleString()}</td>
+                                        <td>₹{c.raisedAmount.toLocaleString()}</td>
+                                        <td>
                                             <div className="d-flex align-items-center">
-                                                <span className="me-2 small">{Math.round((campaign.raisedAmount / campaign.goalAmount) * 100)}%</span>
-                                                <div className="progress flex-grow-1" style={{ height: '6px' }}>
-                                                    <div className="progress-bar bg-success" style={{ width: `${(campaign.raisedAmount / campaign.goalAmount) * 100}%` }}></div>
+                                                <span className="me-2">{Math.round((c.raisedAmount / c.goalAmount) * 100)}%</span>
+                                                <div className="progress flex-grow-1" style={{ height: '5px', width: '80px' }}>
+                                                    <div
+                                                        className="progress-bar bg-success"
+                                                        style={{ width: `${Math.min(100, (c.raisedAmount / c.goalAmount) * 100)}%` }}
+                                                    ></div>
                                                 </div>
                                             </div>
                                         </td>
                                     </tr>
-                                )) : <tr><td colSpan="6" className="text-center">No campaigns found.</td></tr>}
-                            </tbody>
-                        </Table>
-                    )}
+                                ))
+                            )}
+                        </tbody>
+                    </Table>
                 </Card.Body>
             </Card>
         </div>
