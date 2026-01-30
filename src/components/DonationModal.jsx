@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Modal, Button, Form, Row, Col, InputGroup, Alert } from 'react-bootstrap';
 import { FaRupeeSign, FaLock, FaCheckCircle } from 'react-icons/fa';
-import axios from 'axios';
 import { useRazorpay } from 'react-razorpay';
 import { donationService } from '../services/api';
 import { useAuth } from '../context/AuthContext';
@@ -76,7 +75,7 @@ const DonationModal = ({ show, onHide, campaignTitle, campaignId }) => {
                     className="mb-3 text-muted small"
                 />
 
-                <Button variant="success" size="lg" className="w-100" onClick={() => setStep(2)}>
+                <Button variant="success" size="lg" className="w-100" onClick={handleDonate}>
                     Proceed to Pay ₹{amount}
                 </Button>
             </Modal.Body>
@@ -96,9 +95,16 @@ const DonationModal = ({ show, onHide, campaignTitle, campaignId }) => {
                 const donationData = {
                     amount: amount,
                     campaignId: campaignId,
-                    donorId: user ? user.id : 0, // 0 for anonymous/guest if allowed
+                    donorId: user ? user.id : null, // Ensure user ID is passed
                     isAnonymous: isAnonymous
                 };
+
+                if (!donationData.donorId) {
+                    // Start redirect flow instead of just showing error
+                    navigate('/login');
+                    return;
+                }
+
                 await donationService.createDonation(donationData);
                 setStep(3);
             } catch (err) {

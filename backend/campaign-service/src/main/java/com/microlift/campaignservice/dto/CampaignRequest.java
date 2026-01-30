@@ -14,4 +14,5 @@ public class CampaignRequest {
     private String imageUrl;
     private LocalDate endDate;
     private Long beneficiaryId; // For internal use or if passed explicitly
+    private java.util.List<String> documentUrls;
 }

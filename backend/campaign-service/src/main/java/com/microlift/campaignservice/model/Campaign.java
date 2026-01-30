@@ -45,6 +45,7 @@ public class Campaign {
 
     @OneToMany(mappedBy = "campaign", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     @Builder.Default
+    @ToString.Exclude
     private List<Document> documents = new ArrayList<>();
 
     private LocalDateTime createdAt;

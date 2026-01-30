@@ -7,6 +7,8 @@ import com.microlift.campaignservice.repository.CampaignRepository;
 import com.microlift.campaignservice.repository.DocumentRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+
 import java.util.List;
 
 @Service
@@ -15,14 +17,19 @@ public class CampaignService {
 
     private final CampaignRepository campaignRepository;
     private final DocumentRepository documentRepository;
-    private final FileStorageService fileStorageService;
+    private final StorageService storageService; // Use Interface
 
-    public Campaign createCampaign(CampaignRequest request, org.springframework.web.multipart.MultipartFile thumbnail, java.util.List<org.springframework.web.multipart.MultipartFile> files) {
-        String thumbnailUrl = "https://via.placeholder.com/800x400"; // Default
-        
-        if (thumbnail != null && !thumbnail.isEmpty()) {
-            String fileName = fileStorageService.storeFile(thumbnail);
-            thumbnailUrl = "http://localhost:8080/api/campaigns/files/" + fileName;
+    private String getBaseUrl() {
+        return ServletUriComponentsBuilder.fromCurrentContextPath().build().toUriString();
+    }
+
+    public Campaign createCampaign(CampaignRequest request) {
+        // Use high-quality random image if no URL provided
+        String imageUrl = request.getImageUrl();
+        if (imageUrl == null || imageUrl.isEmpty()) {
+            String thumbnailCategory = request.getCategory() != null ? request.getCategory().name().toLowerCase()
+                    : "charity";
+            imageUrl = "https://source.unsplash.com/800x600/?" + thumbnailCategory + ",help";
         }
 
         Campaign campaign = Campaign.builder()
@@ -31,23 +38,18 @@ public class CampaignService {
                 .category(request.getCategory())
                 .goalAmount(request.getGoalAmount())
                 .location(request.getLocation())
-                .imageUrl(thumbnailUrl)
+                .imageUrl(imageUrl)
                 .endDate(request.getEndDate())
                 .beneficiaryId(request.getBeneficiaryId())
                 .status(Campaign.Status.PENDING)
                 .build();
-        
+
         Campaign savedCampaign = campaignRepository.save(campaign);
 
-        if (files != null && !files.isEmpty()) {
-            for (org.springframework.web.multipart.MultipartFile file : files) {
-                String fileName = fileStorageService.storeFile(file);
-                
-                // Create relative URL for frontend access (assuming served via controller)
-                String fileUrl = "http://localhost:8080/api/campaigns/files/" + fileName;
-
+        if (request.getDocumentUrls() != null && !request.getDocumentUrls().isEmpty()) {
+            for (String docUrl : request.getDocumentUrls()) {
                 Document document = Document.builder()
-                        .url(fileUrl)
+                        .url(docUrl)
                         .type("VERIFICATION_DOC")
                         .status(Document.Status.PENDING)
                         .campaign(savedCampaign)
@@ -55,6 +57,7 @@ public class CampaignService {
                 documentRepository.save(document);
             }
         }
+
         return savedCampaign;
     }
 
@@ -94,6 +97,16 @@ public class CampaignService {
     }
 
     public org.springframework.core.io.Resource loadFileAsResource(String fileName) {
-        return fileStorageService.loadFileAsResource(fileName);
+        return storageService.load(fileName);
+    }
+
+    public void fixLegacyImages() {
+        List<Campaign> campaigns = campaignRepository.findAll();
+        for (Campaign c : campaigns) {
+            String category = c.getCategory() != null ? c.getCategory().name() : "random";
+            String newUrl = "https://picsum.photos/seed/" + category + c.getId() + "/800/600";
+            c.setImageUrl(newUrl);
+            campaignRepository.save(c);
+        }
     }
 }

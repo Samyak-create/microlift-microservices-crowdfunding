@@ -1,29 +1,55 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Row, Col, Table, Badge, Button } from 'react-bootstrap';
+import { Card, Row, Col, Table, Badge, Button, Alert } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import { campaignService } from '../services/api';
+import { useAuth } from '../../context/AuthContext';
+import { campaignService, authService } from '../../services/api';
 
 const BeneficiaryDashboard = () => {
     const { user } = useAuth();
     const navigate = useNavigate();
     const [campaigns, setCampaigns] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [uploading, setUploading] = useState(false);
+
+    const handleUploadKyc = async (file) => {
+        setUploading(true);
+        try {
+
+            await authService.uploadKyc(currentUser.email, file);
+            alert('Document uploaded successfully! Verification pending.');
+            // Manually update local state to reflect change immediately, including the fact that a doc exists
+            // We use a placeholder string if we don't have the full URL, just to trigger the "Doc: YES" logic
+            setCurrentUser(prev => ({ ...prev, kycStatus: 'PENDING', isVerified: false, kycDocumentUrl: 'uploaded-pending-save' }));
+            // Also update context/localStorage if possible, but local state is priority
+        } catch (error) {
+            console.error(error);
+            alert('Upload failed: ' + (error.response?.data?.message || error.message));
+        } finally {
+            setUploading(false);
+        }
+    };
+
+    const [currentUser, setCurrentUser] = useState(user);
 
     useEffect(() => {
-        const fetchCampaigns = async () => {
+        const fetchData = async () => {
             if (user?.id) {
                 try {
-                    const data = await campaignService.getCampaignsByBeneficiary(user.id);
-                    setCampaigns(data);
+                    // Fetch fresh user data to get updated KYC status
+                    const userData = await authService.getUserById(user.id);
+
+                    setCurrentUser(userData);
+
+                    const campaignData = await campaignService.getCampaignsByBeneficiary(user.id);
+                    setCampaigns(campaignData);
                 } catch (err) {
-                    console.error("Failed to fetch campaigns", err);
+                    console.error("Failed to fetch data", err);
                 } finally {
                     setLoading(false);
                 }
             }
         };
-        fetchCampaigns();
+        fetchData();
     }, [user]);
 
     const totalRaised = campaigns.reduce((sum, c) => sum + (c.raisedAmount || 0), 0);
@@ -31,6 +57,49 @@ const BeneficiaryDashboard = () => {
     return (
         <div>
             <h2 className="mb-4 fw-bold">My Beneficiary Dashboard</h2>
+
+            <Row className="mb-4">
+                <Col md={12}>
+
+                    {(!currentUser.isVerified && (currentUser.kycStatus === 'PENDING' || (currentUser.kycDocumentUrl && currentUser.kycStatus !== 'REJECTED'))) && (
+                        <Alert variant="info" className="d-flex align-items-center justify-content-between">
+                            <span>
+                                <strong>Account Verification Pending:</strong> Your ID proof has been uploaded and is under review by our Admin team. You can still create campaigns, but they will only be approved after your account is verified.
+                            </span>
+                        </Alert>
+                    )}
+
+                    {(!currentUser.isVerified && (!currentUser.kycStatus || currentUser.kycStatus === 'REJECTED') && !currentUser.kycDocumentUrl) && (
+                        <Card className="border-warning border-2 shadow-sm mb-3">
+                            <Card.Body>
+                                <h5 className="fw-bold text-warning">Action Required: Verify Your Account</h5>
+                                <p>Please upload your Aadhaar Card or Government ID to get verified. You can start campaigns now, but they won't go live until you are verified.</p>
+                                <input
+                                    type="file"
+                                    id="kycFileInput"
+                                    className="form-control mb-2"
+                                    accept="image/*,.pdf"
+                                />
+                                <Button
+                                    variant="primary"
+                                    onClick={async () => {
+                                        const fileInput = document.getElementById('kycFileInput');
+                                        const file = fileInput?.files?.[0];
+                                        if (!file) {
+                                            alert('Please select a file first');
+                                            return;
+                                        }
+                                        handleUploadKyc(file);
+                                    }}
+                                    disabled={uploading}
+                                >
+                                    {uploading ? 'Uploading...' : 'Submit Document'}
+                                </Button>
+                            </Card.Body>
+                        </Card>
+                    )}
+                </Col>
+            </Row>
 
             <Row className="mb-4">
                 <Col md={4}>

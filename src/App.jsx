@@ -35,7 +35,6 @@ function App() {
           <Route path="/about" element={<About />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/create-campaign" element={<CreateCampaign />} />
-          <Route path="/admin-dashboard" element={<AdminDashboard />} />
           <Route path="/notifications" element={<Notifications />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="*" element={<NotFound />} />

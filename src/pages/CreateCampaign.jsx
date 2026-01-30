@@ -3,8 +3,9 @@ import { Container, Row, Col, Card, Form, Button, InputGroup, Alert } from 'reac
 import { FaUpload, FaCheck } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import { campaignService } from '../services/api';
+import mediaService from '../services/mediaService';
 import { useAuth } from '../context/AuthContext';
-import { useAuth } from '../context/AuthContext'; // Import useAuth
+
 
 const CreateCampaign = () => {
     const navigate = useNavigate();
@@ -47,25 +48,31 @@ const CreateCampaign = () => {
         setLoading(true);
         setError(null);
         try {
-            const formDataToSend = new FormData();
-
-            // Append campaign JSON data as a Blob
-            const campaignBlob = new Blob([JSON.stringify(formData)], { type: "application/json" });
-            formDataToSend.append('campaign', campaignBlob);
-
-            // Append Campaign Thumbnail
+            // Step 1: Upload Thumbnail
+            let thumbnailUrl = '';
             if (thumbnailFile) {
-                formDataToSend.append('thumbnail', thumbnailFile);
+                const response = await mediaService.uploadFile(thumbnailFile);
+                thumbnailUrl = response.url;
             }
 
-            // Append each file
+            // Step 2: Upload Verification Docs
+            const documentUrls = [];
             if (selectedFiles) {
                 for (let i = 0; i < selectedFiles.length; i++) {
-                    formDataToSend.append('files', selectedFiles[i]);
+                    const response = await mediaService.uploadFile(selectedFiles[i]);
+                    documentUrls.push(response.url);
                 }
             }
 
-            await campaignService.createCampaign(formDataToSend);
+            // Step 3: Create Campaign (Send JSON)
+            const campaignData = {
+                ...formData,
+                imageUrl: thumbnailUrl,
+                documentUrls: documentUrls
+            };
+
+            await campaignService.createCampaign(campaignData);
+
             setSubmitted(true);
             setTimeout(() => {
                 navigate('/dashboard');

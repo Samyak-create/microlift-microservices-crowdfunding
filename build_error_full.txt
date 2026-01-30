@@ -1,0 +1,63 @@
+﻿[36mvite v7.3.1 [32mbuilding client environment for production...[36m[39m
+transforming...
+[32mΓ£ô[39m 317 modules transformed.
+node.exe : 
+[31mΓ£ù[39m Build 
+failed in 1.38s
+At line:1 char:1
++ & "C:\Program Files
+\nodejs/node.exe" 
+"C:\Program 
+Files\nodejs/node_mo 
+...
++ ~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~
+    + CategoryInfo   
+           : NotSpe  
+  cified: ([31mΓ£   
+ ù[39m Build fai    
+led in 1.38s:Str    
+ing) [], RemoteE    
+xception
+    + FullyQualified 
+   ErrorId : Native  
+  CommandError
+ 
+[31merror during 
+build:
+[31mCould not 
+resolve "../context/A
+uthContext" from "src
+/components/dashboard
+s/BeneficiaryDashboar
+d.jsx"[31m
+file: [36mF:/Project
+/MicroLift/src/compon
+ents/dashboards/Benef
+iciaryDashboard.jsx[
+31m
+    at 
+getRollupError (file:
+///F:/Project/MicroLi
+ft/node_modules/rollu
+p/dist/es/shared/pars
+eAst.js:401:41)
+    at error (file://
+/F:/Project/MicroLift
+/node_modules/rollup/
+dist/es/shared/parseA
+st.js:397:42)
+    at ModuleLoader.h
+andleInvalidResolvedI
+d (file:///F:/Project
+/MicroLift/node_modul
+es/rollup/dist/es/sha
+red/node-entry.js:217
+10:24)
+    at file:///F:/Pro
+ject/MicroLift/node_m
+odules/rollup/dist/es
+/shared/node-entry.js
+:21670:26[39m

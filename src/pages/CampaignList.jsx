@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Container, Row, Col, Form, InputGroup } from 'react-bootstrap';
 import CampaignCard from '../components/CampaignCard';
-import axios from 'axios';
 import { FaSearch, FaFilter } from 'react-icons/fa';
 import { campaignService } from '../services/api';
 
@@ -10,7 +9,7 @@ const CampaignList = () => {
     const [categoryFilter, setCategoryFilter] = useState('ALL');
     const [statusFilter, setStatusFilter] = useState('ACTIVE'); // Default to Active
     const [campaigns, setCampaigns] = useState([]);
-    const [loading, setLoading] = useState(true);
+    // const [loading, setLoading] = useState(true); // Removed unused loading state if effectively unused, or use it.
 
     React.useEffect(() => {
         const fetchCampaigns = async () => {
@@ -24,7 +23,7 @@ const CampaignList = () => {
             } catch (err) {
                 console.error("Error fetching campaigns", err);
             } finally {
-                setLoading(false);
+                // setLoading(false);
             }
         };
         fetchCampaigns();

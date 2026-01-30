@@ -1,0 +1,29 @@
+* Host localhost:8080 was resolved.
+* IPv6: ::1
+* IPv4: 127.0.0.1
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0*   Trying [::1]:8080...
+* Established connection to localhost (::1 port 8080) from ::1 port 54643 
+* using HTTP/1.x
+> POST /api/campaigns HTTP/1.1
+> Host: localhost:8080
+> User-Agent: curl/8.16.0
+> Accept: */*
+> Content-Type: application/json
+> Content-Length: 77
+> 
+} [77 bytes data]
+* upload completely sent off: 77 bytes
+< HTTP/1.1 200 OK
+< transfer-encoding: chunked
+< Vary: Origin
+< Vary: Access-Control-Request-Method
+< Vary: Access-Control-Request-Headers
+< Content-Type: application/json
+< Date: Fri, 30 Jan 2026 18:31:04 GMT
+< 
+{ [299 bytes data]
+100   369    0   292  100    77  12554   3310 --:--:-- --:--:-- --:--:-- 16043
+* Connection #0 to host localhost:8080 left intact
+{"id":19,"title":"Test JSON","description":"Desc","category":null,"goalAmount":100.0,"raisedAmount":0.0,"location":null,"imageUrl":"https://source.unsplash.com/800x600/?charity,help","endDate":null,"status":"PENDING","beneficiaryId":1,"documents":[],"createdAt":"2026-01-31T00:01:04.3046631"}

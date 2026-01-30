@@ -22,6 +22,8 @@ public class User implements org.springframework.security.core.userdetails.UserD
     @Enumerated(EnumType.STRING)
     private Role role;
     private boolean isVerified;
+    private String kycDocumentUrl;
+    private String kycStatus; // PENDING, VERIFIED, REJECTED
     private LocalDateTime createdAt;
 
     @PrePersist
@@ -29,11 +31,14 @@ public class User implements org.springframework.security.core.userdetails.UserD
         createdAt = LocalDateTime.now();
     }
 
-    public enum Role { DONOR, BENEFICIARY, ADMIN }
+    public enum Role {
+        DONOR, BENEFICIARY, ADMIN
+    }
 
     @Override
     public java.util.Collection<? extends org.springframework.security.core.GrantedAuthority> getAuthorities() {
-        return java.util.Collections.singletonList(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_" + role.name()));
+        return java.util.Collections.singletonList(
+                new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_" + role.name()));
     }
 
     @Override
@@ -47,14 +52,22 @@ public class User implements org.springframework.security.core.userdetails.UserD
     }
 
     @Override
-    public boolean isAccountNonExpired() { return true; }
+    public boolean isAccountNonExpired() {
+        return true;
+    }
 
     @Override
-    public boolean isAccountNonLocked() { return true; }
+    public boolean isAccountNonLocked() {
+        return true;
+    }
 
     @Override
-    public boolean isCredentialsNonExpired() { return true; }
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
 
     @Override
-    public boolean isEnabled() { return true; }
+    public boolean isEnabled() {
+        return true;
+    }
 }

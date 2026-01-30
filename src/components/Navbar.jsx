@@ -28,7 +28,6 @@ const AppNavbar = () => {
                         <Nav.Link as={NavLink} to="/how-it-works" className="mx-2 fw-medium">How it's work</Nav.Link>
                         <Nav.Link as={NavLink} to="/about" className="mx-2 fw-medium">About</Nav.Link>
                         {user && <Nav.Link as={NavLink} to="/dashboard" className="mx-2 fw-medium">Dashboard</Nav.Link>}
-                        {user && user.role === 'ADMIN' && <Nav.Link as={NavLink} to="/admin-dashboard" className="text-danger fw-bold mx-2">ADMIN PANEL</Nav.Link>}
 
                         <div className="mx-4 vr d-none d-lg-block"></div>
 

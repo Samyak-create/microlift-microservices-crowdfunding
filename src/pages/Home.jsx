@@ -13,7 +13,7 @@ const Home = () => {
             try {
                 const data = await campaignService.getPublicCampaigns();
                 setCampaigns(data.slice(0, 3));
-            } catch (_err) {
+            } catch (err) {
                 console.error("Failed to fetch campaigns", err);
             }
         };

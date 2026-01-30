@@ -10,7 +10,7 @@ const AdminDashboard = () => {
     const fetchPending = async () => {
         try {
             const data = await campaignService.getPendingCampaigns();
-            setCampaigns(data);
+            setCampaigns(Array.isArray(data) ? data : []);
         } catch (err) {
             console.error(err);
         } finally {
@@ -27,8 +27,35 @@ const AdminDashboard = () => {
             await campaignService.verifyCampaign(id, status);
             setMessage({ type: 'success', text: `Campaign ${status === 'ACTIVE' ? 'Approved' : 'Rejected'} successfully` });
             fetchPending(); // Refresh list
-        } catch (err) {
+        } catch {
             setMessage({ type: 'danger', text: 'Action failed. Try again.' });
+        }
+    };
+
+    const [selectedUser, setSelectedUser] = useState(null);
+    const [showUserModal, setShowUserModal] = useState(false);
+
+    const handleViewUser = async (userId) => {
+        try {
+            const { authService } = await import('../services/api');
+            const user = await authService.getUserById(userId);
+            setSelectedUser(user);
+            setShowUserModal(true);
+        } catch (e) {
+            alert('Failed to fetch user details');
+        }
+    };
+
+    const handleUserVerify = async (status) => {
+        if (!selectedUser) return;
+        try {
+            const { authService } = await import('../services/api');
+            await authService.verifyUser(selectedUser.id, status);
+            alert(`User ${status === 'VERIFIED' ? 'Verified' : 'Rejected'}!`);
+            setShowUserModal(false);
+            // Optionally refresh user data
+        } catch (e) {
+            alert('Action Failed');
         }
     };
 
@@ -55,9 +82,9 @@ const AdminDashboard = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {campaigns.length === 0 ? (
+                            {!Array.isArray(campaigns) || campaigns.length === 0 ? (
                                 <tr>
-                                    <td colSpan="6" className="text-center py-4 text-muted">No pending campaigns found.</td>
+                                    <td colSpan="7" className="text-center py-4 text-muted">No pending campaigns found.</td>
                                 </tr>
                             ) : (
                                 campaigns.map(c => (
@@ -65,9 +92,9 @@ const AdminDashboard = () => {
                                         <td>#{c.id}</td>
                                         <td>
                                             <div className="d-flex align-items-center">
-                                                <img src={c.imageUrl} alt="" className="rounded me-3" style={{ width: '50px', height: '50px', objectFit: 'cover' }} />
+                                                <img src={c.imageUrl || "https://via.placeholder.com/50"} alt={c.title || "Campaign Thumbnail"} className="rounded me-3" style={{ width: '50px', height: '50px', objectFit: 'cover' }} />
                                                 <div>
-                                                    <div className="fw-bold">{c.title}</div>
+                                                    <div className="fw-bold">{c.title || "Untitled"}</div>
                                                     <small className="text-muted">{c.category} • ₹{c.goalAmount}</small>
                                                 </div>
                                             </div>
@@ -77,9 +104,12 @@ const AdminDashboard = () => {
                                                 <small>{c.description}</small>
                                             </div>
                                         </td>
-                                        <td>User #{c.beneficiaryId}</td>
                                         <td>
-                                            {c.documents && c.documents.length > 0 ? (
+                                            User #{c.beneficiaryId}
+                                            <Button variant="link" size="sm" onClick={() => handleViewUser(c.beneficiaryId)}>View User</Button>
+                                        </td>
+                                        <td>
+                                            {Array.isArray(c.documents) && c.documents.length > 0 ? (
                                                 c.documents.map((doc, idx) => (
                                                     <div key={idx}>
                                                         <a href={doc.url} target="_blank" rel="noreferrer" className="text-decoration-none">
@@ -91,13 +121,13 @@ const AdminDashboard = () => {
                                                 <span className="text-muted small">No files</span>
                                             )}
                                         </td>
-                                        <td>{new Date(c.createdAt).toLocaleDateString()}</td>
+                                        <td>{c.createdAt ? new Date(c.createdAt).toLocaleDateString() : 'N/A'}</td>
                                         <td>
                                             <Button variant="success" size="sm" className="me-2" onClick={() => handleVerify(c.id, 'ACTIVE')}>
-                                                Approve
+                                                Approve Campaign
                                             </Button>
                                             <Button variant="danger" size="sm" onClick={() => handleVerify(c.id, 'REJECTED')}>
-                                                Reject
+                                                Reject This
                                             </Button>
                                         </td>
                                     </tr>
@@ -107,6 +137,41 @@ const AdminDashboard = () => {
                     </Table>
                 </Card.Body>
             </Card>
+
+            {/* User Details Modal */}
+            {showUserModal && selectedUser && (
+                <div className="modal show d-block" tabIndex="-1" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
+                    <div className="modal-dialog modal-lg">
+                        <div className="modal-content">
+                            <div className="modal-header">
+                                <h5 className="modal-title">Verify Beneficiary: {selectedUser.fullName}</h5>
+                                <button type="button" className="btn-close" onClick={() => setShowUserModal(false)}></button>
+                            </div>
+                            <div className="modal-body">
+                                <p><strong>Email:</strong> {selectedUser.email}</p>
+                                <p><strong>Phone:</strong> {selectedUser.phoneNumber}</p>
+                                <p><strong>Current Status:</strong> <Badge bg={selectedUser.kycStatus === 'VERIFIED' ? 'success' : 'warning'}>{selectedUser.kycStatus || 'PENDING'}</Badge></p>
+                                <hr />
+                                <h6>KYC Document:</h6>
+                                {selectedUser.kycDocumentUrl ? (
+                                    selectedUser.kycDocumentUrl.startsWith('http') ? (
+                                        <img src={selectedUser.kycDocumentUrl} alt="KYC" className="img-fluid rounded border" />
+                                    ) : (
+                                        <img src={`http://localhost:8080/api/auth/kyc-files/${selectedUser.kycDocumentUrl.replace("uploads/", "")}`} alt="KYC" className="img-fluid rounded border" />
+                                    )
+                                ) : (
+                                    <Alert variant="warning">No KYC Document Uploaded</Alert>
+                                )}
+                            </div>
+                            <div className="modal-footer">
+                                <Button variant="secondary" onClick={() => setShowUserModal(false)}>Close</Button>
+                                <Button variant="danger" onClick={() => handleUserVerify('REJECTED')}>Reject User</Button>
+                                <Button variant="success" onClick={() => handleUserVerify('VERIFIED')}>Verify User</Button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </Container>
     );
 };

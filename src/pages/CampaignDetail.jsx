@@ -61,7 +61,13 @@ const CampaignDetail = () => {
                         </div>
 
                         <Card className="mb-4 overflow-hidden border-0 shadow-sm">
-                            <Card.Img variant="top" src={campaign.imageUrl} alt={campaign.title} style={{ maxHeight: '400px', objectFit: 'cover' }} />
+                            <Card.Img
+                                variant="top"
+                                src={campaign.imageUrl}
+                                alt={campaign.title}
+                                onError={(e) => { e.target.onerror = null; e.target.src = "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjY2NjY2NjIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyNCIgZmlsbD0iIzY2NjY2NiIgZG9taW5hbnQtYmFzZWxpbmU9Im1pZGRsZSIgdGV4dC1hbmNob3I9Im1pZGRsZSI+Tm8gSW1hZ2U8L3RleHQ+PC9zdmc+"; }}
+                                style={{ maxHeight: '400px', objectFit: 'cover' }}
+                            />
                         </Card>
 
                         <Tabs defaultActiveKey="story" className="mb-4 bg-white rounded shadow-sm px-3 pt-3">

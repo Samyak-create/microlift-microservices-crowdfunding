@@ -8,7 +8,7 @@ const CaptchaComponent = ({ onVerify }) => {
     const [isValid, setIsValid] = useState(false);
     const [touched, setTouched] = useState(false);
 
-    const generateCaptcha = () => {
+    const generateCaptcha = React.useCallback(() => {
         const num1 = Math.floor(Math.random() * 10);
         const num2 = Math.floor(Math.random() * 10);
         setCaptcha({ num1, num2, answer: num1 + num2 });
@@ -16,11 +16,11 @@ const CaptchaComponent = ({ onVerify }) => {
         setIsValid(false);
         setTouched(false);
         onVerify(false);
-    };
+    }, [onVerify]);
 
     useEffect(() => {
         generateCaptcha();
-    }, []);
+    }, [generateCaptcha]);
 
     const handleChange = (e) => {
         const val = e.target.value;

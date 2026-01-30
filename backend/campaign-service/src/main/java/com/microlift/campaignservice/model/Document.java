@@ -22,6 +22,8 @@ public class Document {
 
     @ManyToOne
     @JoinColumn(name = "campaign_id")
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    @ToString.Exclude
     private Campaign campaign;
 
     public enum Status {

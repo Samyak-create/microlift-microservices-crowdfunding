@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Container } from 'react-bootstrap';
 import { useAuth } from '../context/AuthContext';
 import DonorDashboard from '../components/dashboards/DonorDashboard';
@@ -24,7 +24,7 @@ const Dashboard = () => {
 
     return (
         <Container className="py-5">
-            {role === 'DONOR' && <DonorDashboard />}
+            {role === 'DONOR' && <DonorDashboard user={user} />}
             {role === 'BENEFICIARY' && <BeneficiaryDashboard />}
             {role === 'ADMIN' && <AdminDashboard />}
 

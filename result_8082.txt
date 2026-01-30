@@ -1,0 +1,30 @@
+* Host localhost:8082 was resolved.
+* IPv6: ::1
+* IPv4: 127.0.0.1
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0*   Trying [::1]:8082...
+* Established connection to localhost (::1 port 8082) from ::1 port 63000 
+* using HTTP/1.x
+> POST /api/campaigns HTTP/1.1
+> Host: localhost:8082
+> User-Agent: curl/8.16.0
+> Accept: */*
+> Content-Length: 5244666
+> Content-Type: multipart/form-data; boundary=------------------------PUGdkTH4h1R9L3EQx6VpC4
+> Expect: 100-continue
+> 
+< HTTP/1.1 100 
+< 
+} [1732 bytes data]
+  8 5121k    0     0    8  449k      0  49.4M --:--:-- --:--:-- --:--:-- 48.7M* upload completely sent off: 5244666 bytes
+< HTTP/1.1 415 
+< Accept: application/json, application/*+json
+< Content-Type: application/json
+< Transfer-Encoding: chunked
+< Date: Fri, 30 Jan 2026 18:17:15 GMT
+< 
+{ [121 bytes data]
+100 5121k    0   115  100 5121k   2600   113M --:--:-- --:--:-- --:--:--  111M
+* Connection #0 to host localhost:8082 left intact
+{"timestamp":"2026-01-30T18:17:15.197+00:00","status":415,"error":"Unsupported Media Type","path":"/api/campaigns"}
