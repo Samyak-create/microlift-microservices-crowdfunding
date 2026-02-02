@@ -20,6 +20,7 @@
 		<module>auth-service</module>
 		<module>campaign-service</module>
 		<module>donation-service</module>
+		<module>media-service</module>
 	</modules>
 	<properties>
 		<java.version>21</java.version>

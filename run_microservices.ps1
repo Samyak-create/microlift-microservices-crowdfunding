@@ -24,6 +24,7 @@ Start-Service "backend\api-gateway" "API Gateway"
 Start-Service "backend\auth-service" "Auth Service"
 Start-Service "backend\campaign-service" "Campaign Service"
 Start-Service "backend\donation-service" "Donation Service"
+Start-Service "backend\media-service" "Media Service"
 
 Write-Host "All services started!" -ForegroundColor Green
 Write-Host "Discovery Server: http://localhost:8761"
