@@ -53,6 +53,14 @@ public class DonationService {
             Donation savedDonation = donationRepository.save(donation);
 
             // Update Campaign Funds
+            com.microlift.donationservice.dto.CampaignDTO campaign = campaignClient
+                    .getCampaignById(request.getCampaignId());
+            double remaining = campaign.getGoalAmount() - campaign.getRaisedAmount();
+
+            if (request.getAmount() > remaining) {
+                throw new RuntimeException("Donation amount exceeds the required funds for this campaign.");
+            }
+
             campaignClient.addFunds(request.getCampaignId(), request.getAmount());
 
             return savedDonation;
@@ -71,6 +79,14 @@ public class DonationService {
                 .paymentMethod("UPI_MOCK") // Mock for now if not using Razorpay flow explicitly
                 .transactionId(java.util.UUID.randomUUID().toString())
                 .build();
+        com.microlift.donationservice.dto.CampaignDTO campaign = campaignClient
+                .getCampaignById(request.getCampaignId());
+        double remaining = campaign.getGoalAmount() - campaign.getRaisedAmount();
+
+        if (request.getAmount() > remaining) {
+            throw new RuntimeException("Donation amount exceeds the required funds for this campaign.");
+        }
+
         campaignClient.addFunds(request.getCampaignId(), request.getAmount());
         return donationRepository.save(donation);
     }

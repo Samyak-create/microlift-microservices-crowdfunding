@@ -35,7 +35,7 @@ $campaigns = @(
     @{
         title = "Clean Water for Drought-Hit Village"
         description = "Building a sustainable rainwater harvesting system for a village in Rajasthan suffering from acute water shortage. Help us bring water to 200 families."
-        category = "ENVIRONMENT"
+        category = "EMERGENCY"
         goalAmount = 800000.0
         location = "Jaisalmer, Rajasthan"
         imageUrl = "https://eng.bharattimes.co.in/wp-content/uploads/2023/06/Rajasthan-water-crisis.jpg"

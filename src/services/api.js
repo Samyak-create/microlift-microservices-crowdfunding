@@ -18,6 +18,21 @@ export const campaignService = {
             raised: campaign.raisedAmount || 0
         }));
     },
+    getCampaignsByBeneficiary: async (beneficiaryId) => {
+        const response = await axios.get(`${API_BASE}/campaigns/beneficiary/${beneficiaryId}`);
+        const activeCampaigns = Array.isArray(response.data) ? response.data : [];
+        const getFullImageUrl = (path) => {
+            const PLACEHOLDER = "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjY2NjY2NjIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyNCIgZmlsbD0iIzY2NjY2NiIgZG9taW5hbnQtYmFzZWxpbmU9Im1pZGRsZSIgdGV4dC1hbmNob3I9Im1pZGRsZSI+Tm8gSW1hZ2U8L3RleHQ+PC9zdmc+";
+            if (!path) return PLACEHOLDER;
+            return path.startsWith('http') ? path : `http://localhost:8080/${path}`;
+        };
+        return activeCampaigns.map(campaign => ({
+            ...campaign,
+            image: getFullImageUrl(campaign.imageUrl),
+            goal: campaign.goalAmount,
+            raised: campaign.raisedAmount || 0
+        }));
+    },
     getCampaignById: async (id) => {
         const response = await axios.get(`${API_BASE}/campaigns/${id}`);
         const data = response.data;
@@ -43,6 +58,13 @@ export const campaignService = {
     verifyCampaign: async (id, status) => {
         const response = await axios.put(`${API_BASE}/campaigns/${id}/status?status=${status}`);
         return response.data;
+    },
+    getCompletedCampaigns: async () => {
+        const response = await axios.get(`${API_BASE}/campaigns/completed`);
+        return response.data;
+    },
+    deleteCampaign: async (id) => {
+        await axios.delete(`${API_BASE}/campaigns/${id}`);
     }
 };
 

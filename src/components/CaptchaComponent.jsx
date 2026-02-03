@@ -3,7 +3,11 @@ import { Form, Button, InputGroup, Card } from 'react-bootstrap';
 import { FaSyncAlt } from 'react-icons/fa';
 
 const CaptchaComponent = ({ onVerify }) => {
-    const [captcha, setCaptcha] = useState({ num1: 0, num2: 0, answer: 0 });
+    const [captcha, setCaptcha] = useState(() => {
+        const num1 = Math.floor(Math.random() * 10);
+        const num2 = Math.floor(Math.random() * 10);
+        return { num1, num2, answer: num1 + num2 };
+    });
     const [userInput, setUserInput] = useState('');
     const [isValid, setIsValid] = useState(false);
     const [touched, setTouched] = useState(false);
@@ -19,8 +23,8 @@ const CaptchaComponent = ({ onVerify }) => {
     }, [onVerify]);
 
     useEffect(() => {
-        generateCaptcha();
-    }, [generateCaptcha]);
+        onVerify(false);
+    }, [onVerify]);
 
     const handleChange = (e) => {
         const val = e.target.value;

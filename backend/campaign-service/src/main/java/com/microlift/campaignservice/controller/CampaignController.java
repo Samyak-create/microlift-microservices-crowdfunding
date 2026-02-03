@@ -50,6 +50,11 @@ public class CampaignController {
         return ResponseEntity.ok(campaignService.getPendingCampaigns());
     }
 
+    @GetMapping("/completed")
+    public ResponseEntity<List<Campaign>> getCompletedCampaigns() {
+        return ResponseEntity.ok(campaignService.getCompletedCampaigns());
+    }
+
     @PutMapping("/{id}/status")
     public Campaign updateStatus(@PathVariable Long id, @RequestParam Campaign.Status status) {
         return campaignService.updateStatus(id, status);
@@ -59,6 +64,12 @@ public class CampaignController {
     public ResponseEntity<Void> addFunds(@PathVariable Long id, @RequestParam Double amount) {
         campaignService.addFunds(id, amount);
         return ResponseEntity.ok().build();
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteCampaign(@PathVariable Long id) {
+        campaignService.deleteCampaign(id);
+        return ResponseEntity.noContent().build();
     }
 
     // Move document status endpoint here for simplicity or update Gateway

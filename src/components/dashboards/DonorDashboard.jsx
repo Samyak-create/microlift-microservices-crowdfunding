@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Button, Container, Table, Badge, Alert, Spinner } from 'react-bootstrap';
-import { useNavigate } from 'react-router-dom';
-import { donationService } from '../../services/api';
+import { useNavigate, Link } from 'react-router-dom';
+import { donationService, campaignService, authService } from '../../services/api';
 
 const DonorDashboard = ({ user }) => {
     const navigate = useNavigate();
@@ -17,7 +17,27 @@ const DonorDashboard = ({ user }) => {
             }
             try {
                 const data = await donationService.getDonationsByDonor(user.id);
-                setDonations(data);
+
+                // Enhancement: Fetch campaign titles for each donation
+                const donationsWithTitles = await Promise.all(data.map(async (donation) => {
+                    try {
+                        const campaign = await campaignService.getCampaignById(donation.campaignId);
+                        let beneficiaryName = "Unknown";
+                        try {
+                            if (campaign.beneficiaryId) {
+                                const user = await authService.getUserById(campaign.beneficiaryId);
+                                beneficiaryName = user.fullName;
+                            }
+                        } catch {
+                            console.warn("Could not fetch beneficiary for campaign", campaign.id);
+                        }
+                        return { ...donation, campaignTitle: campaign.title, beneficiaryName };
+                    } catch {
+                        return { ...donation, campaignTitle: `Campaign #${donation.campaignId}`, beneficiaryName: "Unknown" };
+                    }
+                }));
+
+                setDonations(donationsWithTitles);
             } catch (err) {
                 console.error("Failed to fetch donations", err);
                 setError("Could not load donation history.");
@@ -57,20 +77,22 @@ const DonorDashboard = ({ user }) => {
                         <thead className="bg-light">
                             <tr>
                                 <th>#</th>
-                                <th>Campaign ID</th>
+                                <th>Beneficiary</th>
                                 <th>Amount</th>
                                 <th>Date</th>
-                                <th>Status</th>
                             </tr>
                         </thead>
                         <tbody>
                             {donations.map((d, idx) => (
                                 <tr key={d.id}>
                                     <td>{idx + 1}</td>
-                                    <td>Campaign #{d.campaignId}</td>
+                                    <td>
+                                        <Link to={`/campaign/${d.campaignId}`} className="text-decoration-none fw-bold">
+                                            {d.beneficiaryName}
+                                        </Link>
+                                    </td>
                                     <td className="fw-bold">₹{d.amount}</td>
-                                    <td>{new Date(d.donationDate).toLocaleDateString()}</td>
-                                    <td><Badge bg="success">COMPLETED</Badge></td>
+                                    <td>{new Date(d.createdAt || d.donationDate).toLocaleDateString()}</td>
                                 </tr>
                             ))}
                         </tbody>

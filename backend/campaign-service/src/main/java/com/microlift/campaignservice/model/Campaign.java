@@ -60,7 +60,7 @@ public class Campaign {
     }
 
     public enum Category {
-        EDUCATION, MEDICAL, EMERGENCY, ENVIRONMENT, OTHER
+        EDUCATION, MEDICAL, EMERGENCY, ENVIRONMENT
     }
 
     public enum Status {

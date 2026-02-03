@@ -1,33 +1,28 @@
 /* eslint-disable react-refresh/only-export-components */
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState } from 'react';
 import axios from 'axios';
 import { API_BASE } from '../services/api';
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-    const [user, setUser] = useState(null);
-    const [loading, setLoading] = useState(true);
-
-    // Initialize state from local storage directly to avoid effect sync issues
-    useEffect(() => {
-        const storedUser = localStorage.getItem('user');
-        const token = localStorage.getItem('token');
-        if (storedUser && token) {
-            try {
+    const [user, setUser] = useState(() => {
+        try {
+            const storedUser = localStorage.getItem('user');
+            const token = localStorage.getItem('token');
+            if (storedUser && token) {
                 const parsed = JSON.parse(storedUser);
-                setUser(parsed);
                 axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-            } catch (e) {
-                // eslint-disable-next-line no-console
-                console.error("Failed to parse user", e);
-                // If parsing fails, maybe clear local storage?
-                localStorage.removeItem('user');
-                localStorage.removeItem('token');
+                return parsed;
             }
+        } catch (e) {
+            console.error("Failed to parse user", e);
+            localStorage.removeItem('user');
+            localStorage.removeItem('token');
         }
-        setLoading(false);
-    }, []);
+        return null;
+    });
+    const [loading] = useState(false);
 
     const login = async (email, password) => {
         const response = await axios.post(`${API_BASE}/auth/login`, { email, password });

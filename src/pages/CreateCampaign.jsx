@@ -114,8 +114,6 @@ const CreateCampaign = () => {
                                                 <option value="EDUCATION">Education</option>
                                                 <option value="MEDICAL">Medical</option>
                                                 <option value="EMERGENCY">Emergency</option>
-                                                <option value="ENVIRONMENT">Environment</option>
-                                                <option value="OTHER">Other</option>
                                             </Form.Select>
                                         </Col>
                                         <Col md={6} className="mb-3">
@@ -131,7 +129,14 @@ const CreateCampaign = () => {
                                         </Col>
                                         <Col md={6} className="mb-3">
                                             <Form.Label>End Date</Form.Label>
-                                            <Form.Control type="date" name="endDate" value={formData.endDate} onChange={handleChange} required />
+                                            <Form.Control
+                                                type="date"
+                                                name="endDate"
+                                                value={formData.endDate}
+                                                onChange={handleChange}
+                                                min={new Date().toISOString().split('T')[0]}
+                                                required
+                                            />
                                         </Col>
                                         <Col md={6} className="mb-3">
                                             <Form.Label>Beneficiary Location</Form.Label>

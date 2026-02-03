@@ -72,8 +72,6 @@ const CampaignList = () => {
                                     <option value="EDUCATION">Education</option>
                                     <option value="MEDICAL">Medical</option>
                                     <option value="EMERGENCY">Emergency</option>
-                                    <option value="ENVIRONMENT">Environment</option>
-                                    <option value="OTHER">Other</option>
                                 </Form.Select>
                             </Col>
                             <Col md={3}>

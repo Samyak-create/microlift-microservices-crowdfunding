@@ -10,4 +10,7 @@ public interface CampaignClient {
 
     @PutMapping("/api/campaigns/{id}/add-funds")
     void addFunds(@PathVariable("id") Long id, @RequestParam("amount") Double amount);
+
+    @org.springframework.web.bind.annotation.GetMapping("/api/campaigns/{id}")
+    com.microlift.donationservice.dto.CampaignDTO getCampaignById(@PathVariable("id") Long id);
 }

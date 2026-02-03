@@ -4,13 +4,17 @@ import { campaignService } from '../services/api';
 
 const AdminDashboard = () => {
     const [campaigns, setCampaigns] = useState([]);
+    const [completedCampaigns, setCompletedCampaigns] = useState([]);
     const [loading, setLoading] = useState(true);
     const [message, setMessage] = useState(null);
 
-    const fetchPending = async () => {
+    const fetchCampaigns = async () => {
         try {
-            const data = await campaignService.getPendingCampaigns();
-            setCampaigns(Array.isArray(data) ? data : []);
+            const pendingData = await campaignService.getPendingCampaigns();
+            setCampaigns(Array.isArray(pendingData) ? pendingData : []);
+
+            const completedData = await campaignService.getCompletedCampaigns();
+            setCompletedCampaigns(Array.isArray(completedData) ? completedData : []);
         } catch (err) {
             console.error(err);
         } finally {
@@ -19,16 +23,27 @@ const AdminDashboard = () => {
     };
 
     useEffect(() => {
-        fetchPending();
+        fetchCampaigns();
     }, []);
 
     const handleVerify = async (id, status) => {
         try {
             await campaignService.verifyCampaign(id, status);
             setMessage({ type: 'success', text: `Campaign ${status === 'ACTIVE' ? 'Approved' : 'Rejected'} successfully` });
-            fetchPending(); // Refresh list
+            fetchCampaigns(); // Refresh list
         } catch {
             setMessage({ type: 'danger', text: 'Action failed. Try again.' });
+        }
+    };
+
+    const handleDelete = async (id) => {
+        if (!window.confirm("Are you sure you want to delete this campaign? This action cannot be undone.")) return;
+        try {
+            await campaignService.deleteCampaign(id);
+            setMessage({ type: 'success', text: 'Campaign deleted successfully' });
+            fetchCampaigns();
+        } catch {
+            setMessage({ type: 'danger', text: 'Failed to delete campaign.' });
         }
     };
 
@@ -41,7 +56,7 @@ const AdminDashboard = () => {
             const user = await authService.getUserById(userId);
             setSelectedUser(user);
             setShowUserModal(true);
-        } catch (e) {
+        } catch {
             alert('Failed to fetch user details');
         }
     };
@@ -54,7 +69,7 @@ const AdminDashboard = () => {
             alert(`User ${status === 'VERIFIED' ? 'Verified' : 'Rejected'}!`);
             setShowUserModal(false);
             // Optionally refresh user data
-        } catch (e) {
+        } catch {
             alert('Action Failed');
         }
     };
@@ -124,10 +139,51 @@ const AdminDashboard = () => {
                                         <td>{c.createdAt ? new Date(c.createdAt).toLocaleDateString() : 'N/A'}</td>
                                         <td>
                                             <Button variant="success" size="sm" className="me-2" onClick={() => handleVerify(c.id, 'ACTIVE')}>
-                                                Approve Campaign
+                                                Approve
                                             </Button>
-                                            <Button variant="danger" size="sm" onClick={() => handleVerify(c.id, 'REJECTED')}>
-                                                Reject This
+                                            <Button variant="danger" size="sm" className="me-2" onClick={() => handleVerify(c.id, 'REJECTED')}>
+                                                Reject
+                                            </Button>
+                                            <Button variant="outline-danger" size="sm" onClick={() => handleDelete(c.id)}>
+                                                Delete
+                                            </Button>
+                                        </td>
+                                    </tr>
+                                ))
+                            )}
+                        </tbody>
+                    </Table>
+                </Card.Body>
+            </Card>
+
+            <Card className="shadow-sm border-0 mt-5">
+                <Card.Header className="bg-white fw-bold">Completed Campaigns</Card.Header>
+                <Card.Body className="p-0">
+                    <Table responsive hover className="mb-0">
+                        <thead className="bg-light">
+                            <tr>
+                                <th>ID</th>
+                                <th>Title</th>
+                                <th>Goal</th>
+                                <th>Raised</th>
+                                <th>Beneficiary</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {completedCampaigns.length === 0 ? (
+                                <tr><td colSpan="6" className="text-center py-4 text-muted">No completed campaigns yet.</td></tr>
+                            ) : (
+                                completedCampaigns.map(c => (
+                                    <tr key={c.id}>
+                                        <td>#{c.id}</td>
+                                        <td className="fw-bold">{c.title}</td>
+                                        <td>₹{c.goalAmount}</td>
+                                        <td className="text-success">₹{c.raisedAmount}</td>
+                                        <td>User #{c.beneficiaryId}</td>
+                                        <td>
+                                            <Button variant="outline-danger" size="sm" onClick={() => handleDelete(c.id)}>
+                                                Delete
                                             </Button>
                                         </td>
                                     </tr>

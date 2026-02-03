@@ -65,6 +65,10 @@ public class CampaignService {
         return campaignRepository.findByStatus(Campaign.Status.ACTIVE);
     }
 
+    public List<Campaign> getCompletedCampaigns() {
+        return campaignRepository.findByStatus(Campaign.Status.COMPLETED);
+    }
+
     public List<Campaign> getCampaignsByBeneficiary(Long beneficiaryId) {
         return campaignRepository.findByBeneficiaryId(beneficiaryId);
     }
@@ -85,8 +89,21 @@ public class CampaignService {
 
     public void addFunds(Long id, Double amount) {
         Campaign campaign = getCampaignById(id);
-        campaign.setRaisedAmount(campaign.getRaisedAmount() + amount);
+        double totalRaised = campaign.getRaisedAmount() + amount;
+        campaign.setRaisedAmount(totalRaised);
+
+        if (totalRaised >= campaign.getGoalAmount()) {
+            campaign.setStatus(Campaign.Status.COMPLETED);
+        }
+
         campaignRepository.save(campaign);
+    }
+
+    public void deleteCampaign(Long id) {
+        if (!campaignRepository.existsById(id)) {
+            throw new RuntimeException("Campaign not found");
+        }
+        campaignRepository.deleteById(id);
     }
 
     public void updateDocumentStatus(Long id, Document.Status status) {
