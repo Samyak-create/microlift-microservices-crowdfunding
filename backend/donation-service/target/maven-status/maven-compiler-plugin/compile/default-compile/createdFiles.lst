@@ -1,9 +1,0 @@
-com\microlift\donationservice\service\DonationService.class
-com\microlift\donationservice\DonationServiceApplication.class
-com\microlift\donationservice\dto\DonationRequest.class
-com\microlift\donationservice\repository\DonationRepository.class
-com\microlift\donationservice\controller\DonationController.class
-com\microlift\donationservice\model\Donation$DonationBuilder.class
-com\microlift\donationservice\model\Donation.class
-com\microlift\donationservice\client\CampaignClient.class
-com\microlift\donationservice\dto\CampaignDTO.class
