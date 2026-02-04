@@ -2,9 +2,12 @@ import React from 'react';
 import { Card, ProgressBar, Badge, Button } from 'react-bootstrap';
 import { FaCheckCircle, FaMapMarkerAlt } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 const CampaignCard = ({ id, image, title, description, category, raised, goal, location, verified }) => {
+    const { user } = useAuth();
     const percent = Math.min(100, Math.round((raised / goal) * 100));
+    const isAdmin = user?.role === 'ADMIN';
 
     return (
         <Card className="h-100 overflow-hidden">
@@ -43,8 +46,8 @@ const CampaignCard = ({ id, image, title, description, category, raised, goal, l
                     <ProgressBar now={percent} variant="success" className="mb-3" style={{ height: '8px' }} />
 
                     <Link to={`/campaigns/${id}`} className="d-block">
-                        <Button variant="outline-primary" className="w-100 fw-medium">
-                            Donate Now
+                        <Button variant={isAdmin ? "outline-secondary" : "outline-primary"} className="w-100 fw-medium">
+                            {isAdmin ? 'View Campaign' : 'Donate Now'}
                         </Button>
                     </Link>
                 </div>

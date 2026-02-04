@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Card, ProgressBar, Button, Tabs, Tab, Breadcrumb, Badge, Image } from 'react-bootstrap';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { campaignService } from '../services/api';
 import { FaMapMarkerAlt, FaCheckCircle, FaUserGraduate, FaShareAlt, FaHeart, FaHeartbeat, FaFileInvoiceDollar } from 'react-icons/fa';
 import DonationModal from '../components/DonationModal';
@@ -8,6 +8,7 @@ import { useAuth } from '../context/AuthContext';
 
 const CampaignDetail = () => {
     const { id } = useParams();
+    const navigate = useNavigate();
     const { user } = useAuth();
     const [campaign, setCampaign] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -26,6 +27,19 @@ const CampaignDetail = () => {
         };
         fetchCampaign();
     }, [id]);
+
+    const handleDelete = async () => {
+        if (window.confirm("Are you sure you want to delete this campaign? This action cannot be undone.")) {
+            try {
+                await campaignService.deleteCampaign(id);
+                alert("Campaign deleted successfully");
+                navigate('/campaigns');
+            } catch (err) {
+                console.error("Failed to delete campaign", err);
+                alert("Failed to delete campaign");
+            }
+        }
+    };
 
     if (loading) return <Container className="py-5 text-center">Loading...</Container>;
 
@@ -137,6 +151,9 @@ const CampaignDetail = () => {
                                     {user && user.role === 'ADMIN' ? (
                                         <div className="alert alert-warning text-center">
                                             Admins cannot donate.
+                                            <Button variant="danger" className="w-100 mt-2" onClick={handleDelete}>
+                                                Delete Campaign
+                                            </Button>
                                         </div>
                                     ) : (
                                         <Button variant="primary" size="lg" className="w-100 mb-3 fw-bold" onClick={() => setShowDonate(true)}>
