@@ -1,0 +1,16 @@
+F:\Project\MicroLift\backend\auth-service\src\main\java\com\microlift\dto\RegisterRequest.java
+F:\Project\MicroLift\backend\auth-service\src\main\java\com\microlift\MicroLiftApplication.java
+F:\Project\MicroLift\backend\auth-service\src\main\java\com\microlift\config\ApplicationConfig.java
+F:\Project\MicroLift\backend\auth-service\src\main\java\com\microlift\config\JwtService.java
+F:\Project\MicroLift\backend\auth-service\src\main\java\com\microlift\model\User.java
+F:\Project\MicroLift\backend\auth-service\src\main\java\com\microlift\service\UserService.java
+F:\Project\MicroLift\backend\auth-service\src\main\java\com\microlift\service\AuthService.java
+F:\Project\MicroLift\backend\auth-service\src\main\java\com\microlift\controller\AuthController.java
+F:\Project\MicroLift\backend\auth-service\src\main\java\com\microlift\dto\LoginRequest.java
+F:\Project\MicroLift\backend\auth-service\src\main\java\com\microlift\controller\DonorController.java
+F:\Project\MicroLift\backend\auth-service\src\main\java\com\microlift\repository\UserRepository.java
+F:\Project\MicroLift\backend\auth-service\src\main\java\com\microlift\config\SecurityConfig.java
+F:\Project\MicroLift\backend\auth-service\src\main\java\com\microlift\dto\KycUpdateRequest.java
+F:\Project\MicroLift\backend\auth-service\src\main\java\com\microlift\config\DebugSecurityConfig.java
+F:\Project\MicroLift\backend\auth-service\src\main\java\com\microlift\config\JwtAuthenticationFilter.java
+F:\Project\MicroLift\backend\auth-service\src\main\java\com\microlift\dto\AuthResponse.java

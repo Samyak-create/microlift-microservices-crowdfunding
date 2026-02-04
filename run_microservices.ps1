@@ -26,6 +26,10 @@ Start-Service "backend\campaign-service" "Campaign Service"
 Start-Service "backend\donation-service" "Donation Service"
 Start-Service "backend\media-service" "Media Service"
 
+# 3. Start Frontend
+Write-Host "Starting Frontend..."
+Start-Process powershell -ArgumentList "-NoExit", "-Command", "cd 'frontend'; npm run dev"
+
 Write-Host "All services started!" -ForegroundColor Green
 Write-Host "Discovery Server: http://localhost:8761"
 Write-Host "API Gateway: http://localhost:8080"
