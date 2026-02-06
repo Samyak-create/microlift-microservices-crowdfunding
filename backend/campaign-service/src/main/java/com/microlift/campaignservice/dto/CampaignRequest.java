@@ -1,6 +1,7 @@
 package com.microlift.campaignservice.dto;
 
-import com.microlift.campaignservice.model.Campaign;
+import com.microlift.campaignservice.entity.Campaign;
+import com.microlift.campaignservice.entity.Campaign.Category;
 import lombok.Data;
 import java.time.LocalDate;
 

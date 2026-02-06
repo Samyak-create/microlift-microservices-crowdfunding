@@ -67,6 +67,15 @@ const CampaignDetail = () => {
                     {/* Left Column: Content */}
                     <Col lg={8}>
                         <h1 className="fw-bold mb-3">{campaign.title}</h1>
+
+                        {/* Beneficiary Name - Prominent Display */}
+                        {campaign.beneficiary && (
+                            <div className="mb-3 d-flex align-items-center">
+                                <span className="text-muted me-2">Campaign by:</span>
+                                <strong className="text-primary fs-5">{campaign.beneficiary.fullName || campaign.beneficiary.username}</strong>
+                            </div>
+                        )}
+
                         <div className="d-flex align-items-center mb-4 text-muted">
                             <span className="me-3"><FaMapMarkerAlt /> {campaign.location}</span>
                             {/* Assuming verified is true for active public campaigns for now */}
@@ -148,18 +157,14 @@ const CampaignDetail = () => {
                                         <span>{campaign.endDate} ends</span>
                                     </div>
 
-                                    {user && user.role === 'ADMIN' ? (
-                                        <div className="alert alert-warning text-center">
-                                            Admins cannot donate.
-                                            <Button variant="danger" className="w-100 mt-2" onClick={handleDelete}>
-                                                Delete Campaign
-                                            </Button>
-                                        </div>
-                                    ) : (
-                                        <Button variant="primary" size="lg" className="w-100 mb-3 fw-bold" onClick={() => setShowDonate(true)}>
-                                            Donate Now
+                                    {user && user.role === 'ADMIN' && (
+                                        <Button variant="danger" className="w-100 mb-3" onClick={handleDelete}>
+                                            Delete Campaign
                                         </Button>
                                     )}
+                                    <Button variant="primary" size="lg" className="w-100 mb-3 fw-bold" onClick={() => setShowDonate(true)}>
+                                        Donate Now
+                                    </Button>
                                     <Button variant="outline-secondary" className="w-100 mb-4">
                                         <FaShareAlt className="me-2" /> Share Campaign
                                     </Button>

@@ -1,1 +1,11 @@
 /.metadata/
+# Maven
+**/target/
+*.jar
+
+# Node
+node_modules/
+
+# Logs
+*.log
+

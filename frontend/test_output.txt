@@ -1,0 +1,98 @@
+
+Running 6 tests using 6 workers
+
+[1A[2K[1/6] [chromium] › tests\auth.spec.js:36:5 › Authentication Flow › should logout successfully
+[1A[2K[2/6] [chromium] › tests\campaign.spec.js:20:5 › Campaign Management › should create a new campaign
+[1A[2K[3/6] [chromium] › tests\auth.spec.js:26:5 › Authentication Flow › should show error for invalid credentials
+[1A[2K[4/6] [chromium] › tests\admin.spec.js:18:5 › Admin Workflows › should approve a pending campaign
+[1A[2K[5/6] [chromium] › tests\donation.spec.js:4:5 › Donation Flow › should login and donate to a campaign
+[1A[2K[6/6] [chromium] › tests\auth.spec.js:4:5 › Authentication Flow › should login as admin successfully
+[1A[2K[chromium] › tests\admin.spec.js:18:5 › Admin Workflows › should approve a pending campaign
+No pending campaigns to approve - skipping step
+
+[1A[2K  1) [chromium] › tests\donation.spec.js:4:5 › Donation Flow › should login and donate to a campaign 
+
+    Error: [2mexpect([22m[31mpage[39m[2m).[22mtoHaveURL[2m([22m[32mexpected[39m[2m)[22m failed
+
+    Expected pattern: [32m/\/campaigns\/\d+/[39m
+    Received string:  [31m"http://localhost:5173/campaigns"[39m
+    Timeout: 5000ms
+
+    Call log:
+    [2m  - Expect "toHaveURL" with timeout 5000ms[22m
+    [2m    9 × unexpected value "http://localhost:5173/campaigns"[22m
+
+
+      26 |
+      27 |         // 4. Click Donate on Detail Page (Wait for navigation)
+    > 28 |         await expect(page).toHaveURL(/\/campaigns\/\d+/);
+         |                            ^
+      29 |         await page.click('button:has-text("Donate Now")');
+      30 |
+      31 |         // 4. Fill Donation Form
+        at F:\Project\MicroLift\frontend\tests\donation.spec.js:28:28
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\donation-Donation-Flow-should-login-and-donate-to-a-campaign-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\donation-Donation-Flow-should-login-and-donate-to-a-campaign-chromium\error-context.md
+
+
+[1A[2K  2) [chromium] › tests\auth.spec.js:36:5 › Authentication Flow › should logout successfully ───────
+
+    [31mTest timeout of 30000ms exceeded.[39m
+
+    Error: page.click: Test timeout of 30000ms exceeded.
+    Call log:
+    [2m  - waiting for locator('input[type="checkbox"]')[22m
+
+
+      39 |         await page.fill('input[type="email"]', 'admin@gmail.com');
+      40 |         await page.fill('input[type="password"]', 'admin123');
+    > 41 |         await page.click('input[type="checkbox"]');
+         |                    ^
+      42 |         await page.click('button[type="submit"]');
+      43 |         await expect(page).toHaveURL(/.*dashboard/);
+      44 |
+        at F:\Project\MicroLift\frontend\tests\auth.spec.js:41:20
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\auth-Authentication-Flow-should-logout-successfully-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\auth-Authentication-Flow-should-logout-successfully-chromium\error-context.md
+
+
+[1A[2K  3) [chromium] › tests\auth.spec.js:26:5 › Authentication Flow › should show error for invalid credentials 
+
+    [31mTest timeout of 30000ms exceeded.[39m
+
+    Error: page.click: Test timeout of 30000ms exceeded.
+    Call log:
+    [2m  - waiting for locator('input[type="checkbox"]')[22m
+
+
+      28 |         await page.fill('input[type="email"]', 'wrong@example.com');
+      29 |         await page.fill('input[type="password"]', 'wrongpass');
+    > 30 |         await page.click('input[type="checkbox"]');
+         |                    ^
+      31 |         await page.click('button[type="submit"]');
+      32 |
+      33 |         await expect(page.getByRole('alert')).toBeVisible();
+        at F:\Project\MicroLift\frontend\tests\auth.spec.js:30:20
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\auth-Authentication-Flow-s-c1b41-ror-for-invalid-credentials-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\auth-Authentication-Flow-s-c1b41-ror-for-invalid-credentials-chromium\error-context.md
+
+
+[1A[2K  3 failed
+    [chromium] › tests\auth.spec.js:26:5 › Authentication Flow › should show error for invalid credentials 
+    [chromium] › tests\auth.spec.js:36:5 › Authentication Flow › should logout successfully ────────
+    [chromium] › tests\donation.spec.js:4:5 › Donation Flow › should login and donate to a campaign 
+  3 passed (33.4s)
+
+[36m  Serving HTML report at http://localhost:63932. Press Ctrl+C to quit.[39m

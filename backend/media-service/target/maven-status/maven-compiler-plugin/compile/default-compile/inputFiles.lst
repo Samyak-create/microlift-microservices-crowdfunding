@@ -1,7 +1,7 @@
+F:\Project\MicroLift\backend\media-service\src\main\java\com\microlift\mediaservice\service\S3StorageServiceImpl.java
 F:\Project\MicroLift\backend\media-service\src\main\java\com\microlift\mediaservice\config\CorsConfig.java
 F:\Project\MicroLift\backend\media-service\src\main\java\com\microlift\mediaservice\controller\MediaController.java
 F:\Project\MicroLift\backend\media-service\src\main\java\com\microlift\mediaservice\dto\FileResponse.java
 F:\Project\MicroLift\backend\media-service\src\main\java\com\microlift\mediaservice\MediaServiceApplication.java
-F:\Project\MicroLift\backend\media-service\src\main\java\com\microlift\mediaservice\service\impl\S3StorageService.java
 F:\Project\MicroLift\backend\media-service\src\main\java\com\microlift\mediaservice\service\StorageService.java
-F:\Project\MicroLift\backend\media-service\src\main\java\com\microlift\mediaservice\service\impl\LocalStorageService.java
+F:\Project\MicroLift\backend\media-service\src\main\java\com\microlift\mediaservice\service\LocalStorageServiceImpl.java

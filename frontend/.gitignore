@@ -34,4 +34,13 @@ microlift-uploads/
 # Build
 target/
 **/target/
+# Maven
+**/target/
+*.jar
+
+# Node
+node_modules/
+
+# Logs
+*.log
 

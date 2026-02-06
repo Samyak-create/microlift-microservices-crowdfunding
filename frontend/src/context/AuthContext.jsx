@@ -12,7 +12,7 @@ export const AuthProvider = ({ children }) => {
             const token = localStorage.getItem('token');
             if (storedUser && token) {
                 const parsed = JSON.parse(storedUser);
-                axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+                // axios.defaults.headers.common['Authorization'] is handled by interceptor in api.js
                 return parsed;
             }
         } catch (e) {
@@ -29,7 +29,7 @@ export const AuthProvider = ({ children }) => {
         const { token, ...userData } = response.data;
         localStorage.setItem('token', token);
         localStorage.setItem('user', JSON.stringify(userData));
-        axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+        // axios.defaults.headers.common['Authorization'] is handled by interceptor in api.js
         setUser(userData);
         return userData;
     };
@@ -39,7 +39,7 @@ export const AuthProvider = ({ children }) => {
         const { token, ...data } = response.data;
         localStorage.setItem('token', token);
         localStorage.setItem('user', JSON.stringify(data));
-        axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+        // axios.defaults.headers.common['Authorization'] is handled by interceptor in api.js
         setUser(data);
         return data;
     };
@@ -47,7 +47,7 @@ export const AuthProvider = ({ children }) => {
     const logout = () => {
         localStorage.removeItem('token');
         localStorage.removeItem('user');
-        delete axios.defaults.headers.common['Authorization'];
+        // delete axios.defaults.headers.common['Authorization']; // Handled by interceptor logic (token removal)
         setUser(null);
     };
 

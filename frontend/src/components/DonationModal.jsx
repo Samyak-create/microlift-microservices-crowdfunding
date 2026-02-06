@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
-import { Modal, Button, Form, Row, Col, InputGroup, Alert } from 'react-bootstrap';
-import { FaRupeeSign, FaLock, FaCheckCircle } from 'react-icons/fa';
-import { useRazorpay } from 'react-razorpay';
+import { Modal, Button, Form, InputGroup, Alert, Spinner } from 'react-bootstrap';
+import { FaLock, FaCheckCircle } from 'react-icons/fa';
 import { donationService } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -11,30 +10,88 @@ const DonationModal = ({ show, onHide, campaignTitle, campaignId }) => {
     const navigate = useNavigate();
     const [amount, setAmount] = useState(500);
     const [customAmount, setCustomAmount] = useState('');
-    const [paymentMethod, setPaymentMethod] = useState('mock_qr'); // Default to mock
-    const [step, setStep] = useState(1); // 1: Amount, 2: Payment, 3: Success
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [isAnonymous, setIsAnonymous] = useState(false);
+    const [step, setStep] = useState(1); // 1: Amount, 2: Processing, 3: Success
 
-    const handleDonate = () => {
+    // Helper to select preset amounts
+    const handleAmountSelect = (val) => {
+        setAmount(val);
+        setCustomAmount('');
+    };
+
+    // Helper for custom amount input
+    const handleCustomAmountChange = (e) => {
+        setCustomAmount(e.target.value);
+        setAmount(Number(e.target.value));
+    };
+
+    // Mock Payment Handler
+    const handleMockPayment = async () => {
         if (!user) {
             navigate('/login');
             return;
         }
-        setStep(2);
+
+        setLoading(true);
+        setError('');
+        setStep(2); // Show processing screen
+
+        try {
+            // Simulate network delay for realism
+            await new Promise(resolve => setTimeout(resolve, 2000));
+
+            // 1. Create Transaction (Mock Backend Call)
+            // Ideally we call an endpoint that returns a mock transaction ID
+            const paymentIntent = await donationService.createPaymentIntent(amount);
+            const transactionId = paymentIntent.clientSecret || "mock_txn_" + Date.now();
+
+            console.log("DEBUG: Mock Transaction Initiated:", transactionId);
+
+            // 2. "Verify" / Complete Payment
+            const verifyData = {
+                paymentId: transactionId,
+                amount: amount,
+                campaignId: campaignId,
+                donorId: user.id,
+                isAnonymous: isAnonymous
+            };
+
+            await donationService.verifyDonation(verifyData);
+
+            // 3. Fetch campaign details to get beneficiary info for email
+            try {
+                const { campaignService, authService } = await import('../services/api');
+                const campaign = await campaignService.getCampaignById(campaignId);
+                const beneficiary = await authService.getUserById(campaign.beneficiaryId);
+
+                // Send notification email to beneficiary
+                const { emailService } = await import('../services/emailService');
+                emailService.sendDonationReceivedEmail(
+                    beneficiary.email,
+                    beneficiary.fullName || beneficiary.username,
+                    amount,
+                    campaignTitle,
+                    isAnonymous ? 'Anonymous Donor' : (user.fullName || user.username)
+                );
+            } catch (emailErr) {
+                // Email sending failure shouldn't block donation success
+                console.warn('Failed to send donation email:', emailErr);
+            }
+
+            setStep(3); // Success!
+
+        } catch (err) {
+            console.error("Mock Payment Error:", err);
+            setError("Simulation failed. Please try again.");
+            setStep(1); // Go back
+        } finally {
+            setLoading(false);
+        }
     };
 
-    const handleAmountSelect = (val) => {
-        setAmount(val);
-        setCustomAmount('');
-    }
-
-    const handleCustomAmountChange = (e) => {
-        setCustomAmount(e.target.value);
-        setAmount(Number(e.target.value));
-    }
-
+    // Step 1: Amount Selection
     const renderStep1 = () => (
         <>
             <Modal.Header closeButton>
@@ -75,100 +132,42 @@ const DonationModal = ({ show, onHide, campaignTitle, campaignId }) => {
                     className="mb-3 text-muted small"
                 />
 
-                <Button variant="success" size="lg" className="w-100" onClick={handleDonate}>
-                    Proceed to Pay ₹{amount}
+                {error && <Alert variant="danger" className="mb-3">{error}</Alert>}
+
+                <Button
+                    variant="success"
+                    size="lg"
+                    className="w-100"
+                    onClick={handleMockPayment}
+                    disabled={loading}
+                >
+                    Donate ₹{amount}
                 </Button>
+
+                <div className="text-center mt-3">
+                    <small className="text-muted"><FaLock className="me-1" /> Secure Payment (Mock Mode)</small>
+                </div>
             </Modal.Body>
-            <Modal.Footer className="justify-content-center border-0 pt-0">
-                <small className="text-muted"><FaLock className="me-1" /> Secure Payment</small>
-            </Modal.Footer>
         </>
     );
 
-    const { Razorpay } = useRazorpay();
-
-    const handlePayment = async () => {
-        if (paymentMethod === 'mock_qr') {
-            setLoading(true);
-            setError('');
-            try {
-                const donationData = {
-                    amount: amount,
-                    campaignId: campaignId,
-                    donorId: user ? user.id : null, // Ensure user ID is passed
-                    isAnonymous: isAnonymous
-                };
-
-                if (!donationData.donorId) {
-                    // Start redirect flow instead of just showing error
-                    navigate('/login');
-                    return;
-                }
-
-                await donationService.createDonation(donationData);
-                setStep(3);
-            } catch (err) {
-                console.error(err);
-                setError('Payment failed. Please try again.');
-            } finally {
-                setLoading(false);
-            }
-            return;
-        }
-
-        // ... Existing Razorpay logic kept as fallback or removed if user wants ONLY mock
-        setLoading(true);
-        // ... (rest of Razorpay code if we want to keep it, but for this request "just add a demo", I will prioritize Mock)
-    };
-
+    // Step 2: Simulated Processing
     const renderStep2 = () => (
-        <>
-            <Modal.Header closeButton onHide={() => setStep(1)}>
-                <Modal.Title>Complete Donation</Modal.Title>
-            </Modal.Header>
-            <Modal.Body className="text-center">
-                <p className="mb-3">Amount to Pay: <strong>₹{amount}</strong></p>
-                {error && <Alert variant="danger">{error}</Alert>}
-
-                <div className="mb-4">
-                    <img
-                        src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=upi://pay?pa=microlift@upi&pn=MicroLift&am=${amount}`}
-                        alt="Payment QR"
-                        className="img-fluid border p-2 rounded"
-                    />
-                    <small className="d-block text-muted mt-2">Scan with any UPI App (GPay, PhonePe, Paytm)</small>
-                </div>
-
-                <div className="d-grid gap-2">
-                    <Button
-                        variant="success"
-                        size="lg"
-                        className="w-100"
-                        onClick={() => { setPaymentMethod('mock_qr'); handlePayment(); }}
-                        disabled={loading}
-                    >
-                        {loading ? 'Processing...' : 'Simulate Payment Success'}
-                    </Button>
-                    <Button variant="outline-secondary" size="sm" onClick={() => setStep(1)}>Back</Button>
-                </div>
-            </Modal.Body>
-        </>
+        <Modal.Body className="text-center py-5">
+            <Spinner animation="border" variant="primary" className="mb-4" style={{ width: '3rem', height: '3rem' }} />
+            <h4 className="fw-bold">Processing Payment...</h4>
+            <p className="text-muted">Please wait while we confirm your transaction.</p>
+        </Modal.Body>
     );
 
+    // Step 3: Success Message
     const renderStep3 = () => (
-        <>
-            <Modal.Body className="text-center py-5">
-                <div className="mb-4 text-success">
-                    <FaCheckCircle size={60} />
-                </div>
-                <h3 className="fw-bold mb-3">Thank You!</h3>
-                <p className="text-muted mb-4">
-                    Your donation of <strong>₹{amount}</strong> was successful. <br />
-                    You have made a big difference today.
-                </p>
-                <Button variant="primary" onClick={onHide}>Close</Button>
-            </Modal.Body>
-        </>
+        <Modal.Body className="text-center py-5">
+            <div className="mb-4 text-success"><FaCheckCircle size={60} /></div>
+            <h3 className="fw-bold mb-3">Thank You!</h3>
+            <p className="text-muted mb-4">Your donation of <strong>₹{amount}</strong> was successful.</p>
+            <Button variant="primary" onClick={onHide}>Close</Button>
+        </Modal.Body>
     );
 
     return (

@@ -4,7 +4,7 @@ import { FaCheckCircle, FaMapMarkerAlt } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
-const CampaignCard = ({ id, image, title, description, category, raised, goal, location, verified }) => {
+const CampaignCard = ({ id, image, title, description, category, raised, goal, location, verified, beneficiary }) => {
     const { user } = useAuth();
     const percent = Math.min(100, Math.round((raised / goal) * 100));
     const isAdmin = user?.role === 'ADMIN';
@@ -33,6 +33,15 @@ const CampaignCard = ({ id, image, title, description, category, raised, goal, l
                         </Badge>
                     )}
                 </div>
+
+                {/* Beneficiary Name Display */}
+                {beneficiary && (
+                    <div className="mb-2">
+                        <small className="text-muted">by </small>
+                        <small className="fw-bold text-primary">{beneficiary.fullName || beneficiary.username}</small>
+                    </div>
+                )}
+
                 <Card.Title className="fw-bold mb-2 text-truncate" title={title}>{title}</Card.Title>
                 <Card.Text className="text-muted small mb-3 flex-grow-1">
                     {description.length > 80 ? description.substring(0, 80) + '...' : description}

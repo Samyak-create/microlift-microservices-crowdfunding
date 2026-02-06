@@ -1,6 +1,6 @@
 package com.microlift.campaignservice.repository;
 
-import com.microlift.campaignservice.model.Campaign;
+import com.microlift.campaignservice.entity.Campaign;
 import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 

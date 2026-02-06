@@ -1,129 +1,33 @@
 package com.microlift.campaignservice.service;
 
 import com.microlift.campaignservice.dto.CampaignRequest;
-import com.microlift.campaignservice.model.Campaign;
-import com.microlift.campaignservice.model.Document;
-import com.microlift.campaignservice.repository.CampaignRepository;
-import com.microlift.campaignservice.repository.DocumentRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
-
+import com.microlift.campaignservice.entity.Campaign;
+import com.microlift.campaignservice.entity.Document;
+import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
-@Service
-@RequiredArgsConstructor
-public class CampaignService {
+public interface CampaignService {
+    Campaign createCampaign(CampaignRequest request);
 
-    private final CampaignRepository campaignRepository;
-    private final DocumentRepository documentRepository;
-    private final StorageService storageService; // Use Interface
+    List<Campaign> getAllActiveCampaigns();
 
-    private String getBaseUrl() {
-        return ServletUriComponentsBuilder.fromCurrentContextPath().build().toUriString();
-    }
+    Campaign getCampaignById(Long id);
 
-    public Campaign createCampaign(CampaignRequest request) {
-        // Use high-quality random image if no URL provided
-        String imageUrl = request.getImageUrl();
-        if (imageUrl == null || imageUrl.isEmpty()) {
-            String thumbnailCategory = request.getCategory() != null ? request.getCategory().name().toLowerCase()
-                    : "charity";
-            imageUrl = "https://source.unsplash.com/800x600/?" + thumbnailCategory + ",help";
-        }
+    List<Campaign> getCampaignsByBeneficiary(Long beneficiaryId);
 
-        Campaign campaign = Campaign.builder()
-                .title(request.getTitle())
-                .description(request.getDescription())
-                .category(request.getCategory())
-                .goalAmount(request.getGoalAmount())
-                .location(request.getLocation())
-                .imageUrl(imageUrl)
-                .endDate(request.getEndDate())
-                .beneficiaryId(request.getBeneficiaryId())
-                .status(Campaign.Status.PENDING)
-                .build();
+    List<Campaign> getPendingCampaigns();
 
-        Campaign savedCampaign = campaignRepository.save(campaign);
+    List<Campaign> getCompletedCampaigns();
 
-        if (request.getDocumentUrls() != null && !request.getDocumentUrls().isEmpty()) {
-            for (String docUrl : request.getDocumentUrls()) {
-                Document document = Document.builder()
-                        .url(docUrl)
-                        .type("VERIFICATION_DOC")
-                        .status(Document.Status.PENDING)
-                        .campaign(savedCampaign)
-                        .build();
-                documentRepository.save(document);
-            }
-        }
+    Campaign verifyCampaign(Long id, String status);
 
-        return savedCampaign;
-    }
+    void deleteCampaign(Long id);
 
-    public List<Campaign> getAllActiveCampaigns() {
-        return campaignRepository.findByStatus(Campaign.Status.ACTIVE);
-    }
+    Campaign uploadDocument(Long campaignId, String documentType, MultipartFile file);
 
-    public List<Campaign> getCompletedCampaigns() {
-        return campaignRepository.findByStatus(Campaign.Status.COMPLETED);
-    }
+    Document getDocument(Long documentId);
 
-    public List<Campaign> getCampaignsByBeneficiary(Long beneficiaryId) {
-        return campaignRepository.findByBeneficiaryId(beneficiaryId);
-    }
+    void updateCampaignRaisedAmount(Long campaignId, Double amount);
 
-    public List<Campaign> getPendingCampaigns() {
-        return campaignRepository.findByStatus(Campaign.Status.PENDING);
-    }
-
-    public Campaign getCampaignById(Long id) {
-        return campaignRepository.findById(id).orElseThrow(() -> new RuntimeException("Campaign not found"));
-    }
-
-    public Campaign updateStatus(Long id, Campaign.Status status) {
-        Campaign campaign = getCampaignById(id);
-        campaign.setStatus(status);
-        return campaignRepository.save(campaign);
-    }
-
-    public void addFunds(Long id, Double amount) {
-        Campaign campaign = getCampaignById(id);
-        double totalRaised = campaign.getRaisedAmount() + amount;
-        campaign.setRaisedAmount(totalRaised);
-
-        if (totalRaised >= campaign.getGoalAmount()) {
-            campaign.setStatus(Campaign.Status.COMPLETED);
-        }
-
-        campaignRepository.save(campaign);
-    }
-
-    public void deleteCampaign(Long id) {
-        if (!campaignRepository.existsById(id)) {
-            throw new RuntimeException("Campaign not found");
-        }
-        campaignRepository.deleteById(id);
-    }
-
-    public void updateDocumentStatus(Long id, Document.Status status) {
-        Document document = documentRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Document not found"));
-        document.setStatus(status);
-        documentRepository.save(document);
-    }
-
-    public org.springframework.core.io.Resource loadFileAsResource(String fileName) {
-        return storageService.load(fileName);
-    }
-
-    public void fixLegacyImages() {
-        List<Campaign> campaigns = campaignRepository.findAll();
-        for (Campaign c : campaigns) {
-            String category = c.getCategory() != null ? c.getCategory().name() : "random";
-            String newUrl = "https://picsum.photos/seed/" + category + c.getId() + "/800/600";
-            c.setImageUrl(newUrl);
-            campaignRepository.save(c);
-        }
-    }
+    void fixLegacyImages();
 }

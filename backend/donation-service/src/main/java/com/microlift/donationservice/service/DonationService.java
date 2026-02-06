@@ -1,101 +1,17 @@
 package com.microlift.donationservice.service;
 
 import com.microlift.donationservice.dto.DonationRequest;
-import com.microlift.donationservice.model.Donation;
-import com.microlift.donationservice.repository.DonationRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
+import com.microlift.donationservice.entity.Donation;
 import java.util.List;
-import java.util.UUID;
 
-@Service
-@RequiredArgsConstructor
-public class DonationService {
+public interface DonationService {
+    String createPaymentIntent(Double amount);
 
-    private final DonationRepository donationRepository;
-    private final com.microlift.donationservice.client.CampaignClient campaignClient;
-    private com.razorpay.RazorpayClient razorpayClient;
+    Donation verifyDonation(String paymentId, String orderId, String signature, DonationRequest request);
 
-    @org.springframework.beans.factory.annotation.Value("${razorpay.key_id}")
-    private String razorpayKeyId;
+    Donation createDonation(DonationRequest request);
 
-    @org.springframework.beans.factory.annotation.Value("${razorpay.key_secret}")
-    private String razorpayKeySecret;
+    List<Donation> getDonationsByDonor(Long donorId);
 
-    @jakarta.annotation.PostConstruct
-    public void initRazorpay() throws com.razorpay.RazorpayException {
-        this.razorpayClient = new com.razorpay.RazorpayClient(razorpayKeyId, razorpayKeySecret);
-    }
-
-    public com.razorpay.Order createOrder(Double amount) throws com.razorpay.RazorpayException {
-        org.json.JSONObject options = new org.json.JSONObject();
-        options.put("amount", (int) (amount * 100)); // Amount in paise
-        options.put("currency", "INR");
-        options.put("receipt", "txn_" + System.currentTimeMillis());
-        return razorpayClient.orders.create(options);
-    }
-
-    public Donation verifyDonation(String paymentId, String orderId, String signature, DonationRequest request)
-            throws com.razorpay.RazorpayException {
-        String generatedSignature = com.razorpay.Utils.getHash(orderId + "|" + paymentId, razorpayKeySecret);
-
-        if (generatedSignature.equals(signature)) {
-            // Payment Successful
-            Donation donation = Donation.builder()
-                    .amount(request.getAmount())
-                    .donorId(request.getDonorId())
-                    .campaignId(request.getCampaignId())
-                    .isAnonymous(request.isAnonymous())
-                    .paymentMethod("RAZORPAY")
-                    .transactionId(paymentId)
-                    .build();
-
-            Donation savedDonation = donationRepository.save(donation);
-
-            // Update Campaign Funds
-            com.microlift.donationservice.dto.CampaignDTO campaign = campaignClient
-                    .getCampaignById(request.getCampaignId());
-            double remaining = campaign.getGoalAmount() - campaign.getRaisedAmount();
-
-            if (request.getAmount() > remaining) {
-                throw new RuntimeException("Donation amount exceeds the required funds for this campaign.");
-            }
-
-            campaignClient.addFunds(request.getCampaignId(), request.getAmount());
-
-            return savedDonation;
-        } else {
-            throw new RuntimeException("Payment Verification Failed");
-        }
-    }
-
-    public Donation createDonation(DonationRequest request) {
-        // Fallback or Cash/Other methods
-        Donation donation = Donation.builder()
-                .amount(request.getAmount())
-                .donorId(request.getDonorId())
-                .campaignId(request.getCampaignId())
-                .isAnonymous(request.isAnonymous())
-                .paymentMethod("UPI_MOCK") // Mock for now if not using Razorpay flow explicitly
-                .transactionId(java.util.UUID.randomUUID().toString())
-                .build();
-        com.microlift.donationservice.dto.CampaignDTO campaign = campaignClient
-                .getCampaignById(request.getCampaignId());
-        double remaining = campaign.getGoalAmount() - campaign.getRaisedAmount();
-
-        if (request.getAmount() > remaining) {
-            throw new RuntimeException("Donation amount exceeds the required funds for this campaign.");
-        }
-
-        campaignClient.addFunds(request.getCampaignId(), request.getAmount());
-        return donationRepository.save(donation);
-    }
-
-    public List<Donation> getDonationsByDonor(Long donorId) {
-        return donationRepository.findByDonorId(donorId);
-    }
-
-    public List<Donation> getDonationsByCampaign(Long campaignId) {
-        return donationRepository.findByCampaignId(campaignId);
-    }
+    List<Donation> getDonationsByCampaign(Long campaignId);
 }

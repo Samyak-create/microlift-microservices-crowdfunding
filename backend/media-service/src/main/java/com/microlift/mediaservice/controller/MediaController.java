@@ -2,7 +2,7 @@ package com.microlift.mediaservice.controller;
 
 import com.microlift.mediaservice.dto.FileResponse;
 import com.microlift.mediaservice.service.StorageService;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -16,15 +16,15 @@ import java.nio.file.Paths;
 
 @RestController
 @RequestMapping("/api/media")
-@RequiredArgsConstructor
 public class MediaController {
 
-    private final StorageService storageService;
+    @Autowired
+    private StorageService storageService;
 
     @PostMapping("/upload")
-    public ResponseEntity<FileResponse> uploadFile(@RequestParam("file") MultipartFile file) {
+    public FileResponse uploadFile(@RequestParam("file") MultipartFile file) {
         String fileUrl = storageService.store(file);
-        return ResponseEntity.ok(new FileResponse(fileUrl));
+        return new FileResponse(fileUrl);
     }
 
     @GetMapping("/files/{filename:.+}")

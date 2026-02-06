@@ -1,8 +1,8 @@
+com\microlift\mediaservice\service\LocalStorageServiceImpl.class
 com\microlift\mediaservice\MediaServiceApplication.class
 com\microlift\mediaservice\service\StorageService.class
 com\microlift\mediaservice\config\CorsConfig.class
 com\microlift\mediaservice\controller\MediaController.class
 com\microlift\mediaservice\dto\FileResponse.class
-com\microlift\mediaservice\service\impl\LocalStorageService.class
 com\microlift\mediaservice\config\CorsConfig$1.class
-com\microlift\mediaservice\service\impl\S3StorageService.class
+com\microlift\mediaservice\service\S3StorageServiceImpl.class

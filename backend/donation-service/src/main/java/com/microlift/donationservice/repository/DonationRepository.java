@@ -1,6 +1,6 @@
 package com.microlift.donationservice.repository;
 
-import com.microlift.donationservice.model.Donation;
+import com.microlift.donationservice.entity.Donation;
 import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 

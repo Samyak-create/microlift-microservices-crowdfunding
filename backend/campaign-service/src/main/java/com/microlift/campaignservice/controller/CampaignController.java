@@ -1,95 +1,86 @@
 package com.microlift.campaignservice.controller;
 
 import com.microlift.campaignservice.dto.CampaignRequest;
-import com.microlift.campaignservice.model.Campaign;
-import com.microlift.campaignservice.model.Document;
+import com.microlift.campaignservice.entity.Campaign;
+import com.microlift.campaignservice.entity.Document;
 import com.microlift.campaignservice.service.CampaignService;
-import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/campaigns")
-@RequiredArgsConstructor
 public class CampaignController {
 
-    private final CampaignService campaignService;
+    @Autowired
+    private CampaignService campaignService;
 
-    @PostMapping(consumes = org.springframework.http.MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Campaign> createCampaign(@RequestBody CampaignRequest request) {
-        return ResponseEntity.ok(campaignService.createCampaign(request));
+    @PostMapping
+    public Campaign createCampaign(@RequestBody CampaignRequest request) {
+        return campaignService.createCampaign(request);
     }
 
-    @GetMapping("/files/{fileName:.+}")
-    public ResponseEntity<org.springframework.core.io.Resource> getFile(@PathVariable String fileName) {
-        org.springframework.core.io.Resource file = campaignService.loadFileAsResource(fileName);
-        return ResponseEntity.ok()
-                .header(org.springframework.http.HttpHeaders.CONTENT_DISPOSITION,
-                        "inline; filename=\"" + file.getFilename() + "\"")
-                .body(file);
-    }
-
-    @GetMapping
-    public ResponseEntity<List<Campaign>> getAllActiveCampaigns() {
-        return ResponseEntity.ok(campaignService.getAllActiveCampaigns());
+    @GetMapping("/active")
+    public List<Campaign> getAllActiveCampaigns() {
+        return campaignService.getAllActiveCampaigns();
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Campaign> getCampaignById(@PathVariable Long id) {
-        return ResponseEntity.ok(campaignService.getCampaignById(id));
+    public Campaign getCampaignById(@PathVariable Long id) {
+        return campaignService.getCampaignById(id);
     }
 
     @GetMapping("/beneficiary/{beneficiaryId}")
-    public ResponseEntity<List<Campaign>> getCampaignsByBeneficiary(@PathVariable Long beneficiaryId) {
-        return ResponseEntity.ok(campaignService.getCampaignsByBeneficiary(beneficiaryId));
+    public List<Campaign> getCampaignsByBeneficiary(@PathVariable Long beneficiaryId) {
+        return campaignService.getCampaignsByBeneficiary(beneficiaryId);
     }
 
     @GetMapping("/pending")
-    public ResponseEntity<List<Campaign>> getPendingCampaigns() {
-        return ResponseEntity.ok(campaignService.getPendingCampaigns());
+    public List<Campaign> getPendingCampaigns() {
+        return campaignService.getPendingCampaigns();
     }
 
     @GetMapping("/completed")
-    public ResponseEntity<List<Campaign>> getCompletedCampaigns() {
-        return ResponseEntity.ok(campaignService.getCompletedCampaigns());
+    public List<Campaign> getCompletedCampaigns() {
+        return campaignService.getCompletedCampaigns();
     }
 
-    @PutMapping("/{id}/status")
-    public Campaign updateStatus(@PathVariable Long id, @RequestParam Campaign.Status status) {
-        return campaignService.updateStatus(id, status);
+    @PostMapping("/{id}/verify")
+    public Campaign verifyCampaign(@PathVariable Long id, @RequestParam String status) {
+        return campaignService.verifyCampaign(id, status);
     }
 
     @PutMapping("/{id}/add-funds")
-    public ResponseEntity<Void> addFunds(@PathVariable Long id, @RequestParam Double amount) {
-        campaignService.addFunds(id, amount);
-        return ResponseEntity.ok().build();
+    public void addFunds(@PathVariable Long id, @RequestParam Double amount) {
+        campaignService.updateCampaignRaisedAmount(id, amount);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteCampaign(@PathVariable Long id) {
+    public void deleteCampaign(@PathVariable Long id) {
         campaignService.deleteCampaign(id);
-        return ResponseEntity.noContent().build();
     }
 
-    // Move document status endpoint here for simplicity or update Gateway
-    @PutMapping("/documents/{id}/status")
-    public ResponseEntity<Void> updateDocumentStatus(@PathVariable Long id, @RequestParam Document.Status status) {
-        campaignService.updateDocumentStatus(id, status);
-        return ResponseEntity.ok().build();
+    @PostMapping("/{id}/upload-document")
+    public Campaign uploadDocument(
+            @PathVariable Long id,
+            @RequestParam String documentType,
+            @RequestParam MultipartFile file) {
+        return campaignService.uploadDocument(id, documentType, file);
     }
 
-    // Emergency Fix Endpoint
-    @PostMapping("/fix-images")
-    public ResponseEntity<String> fixImages() {
-        // Logic moved here
-        java.util.List<Campaign> campaigns = campaignService.getAllActiveCampaigns(); // or findAll via repo if service
-                                                                                      // exposd
-        // Since service only exposes limited methods, let's just cheat and return
-        // instructions
-        // OR better: access Repo? No, controller shouldn't.
-        // Let's add the method to Service.
+    @GetMapping("/documents/{documentId}")
+    public Document getDocument(@PathVariable Long documentId) {
+        return campaignService.getDocument(documentId);
+    }
+
+    @GetMapping("/all")
+    public List<Campaign> getAllCampaigns() {
+        return campaignService.getAllActiveCampaigns(); // Default to active for now or implement listAll
+    }
+
+    @PostMapping("/fix-legacy-images")
+    public void fixLegacyImages() {
         campaignService.fixLegacyImages();
-        return ResponseEntity.ok("Images Fixed");
     }
 }

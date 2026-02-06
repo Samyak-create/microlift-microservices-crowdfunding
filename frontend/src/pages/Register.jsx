@@ -24,6 +24,12 @@ const Register = () => {
         }
         try {
             await register({ ...formData, role: key.toUpperCase() });
+
+            // Send Welcome Email
+            import('../services/emailService').then(({ emailService }) => {
+                emailService.sendWelcomeEmail({ username: formData.fullName, email: formData.email });
+            });
+
             // User requested explicit login flow
             navigate('/login', { state: { message: 'Registration successful! Please login to continue.' } });
         } catch (err) {

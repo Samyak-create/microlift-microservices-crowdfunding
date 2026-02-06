@@ -79,7 +79,10 @@ const CreateCampaign = () => {
             }, 2000);
         } catch (err) {
             console.error(err);
-            setError('Failed to create campaign. Please try again.');
+            const errMsg = err.response?.data?.message || err.message || 'Failed to create campaign. Please try again.';
+            setError(`Error: ${errMsg} (Status: ${err.response?.status})`);
+            // Alert for immediate visibility
+            alert(`Campaign Creation Failed:\n${errMsg}\nStatus: ${err.response?.status}`);
         } finally {
             setLoading(false);
         }
