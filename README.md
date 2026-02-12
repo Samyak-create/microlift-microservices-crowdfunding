@@ -650,9 +650,9 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 👨‍💻 Author
 
 **Your Name**
-- GitHub: [@yourusername](https://github.com/samyak-create)
-- LinkedIn: [Your LinkedIn](https://linkedin.com/in/samyak26)
-- Email: your.samyakbageshwar26@gmail.com
+- GitHub: [@samyak-create](https://github.com/Samyak-create)
+- LinkedIn: [Samyak26](https://www.linkedin.com/in/samyak26/)
+- Email: samyakbageshwar26@gmail.com
 
 ---
 
